@@ -4,7 +4,6 @@ Tests for CLI interface.
 Tests command-line interface functionality using Typer's CliRunner.
 """
 
-import pytest
 from typer.testing import CliRunner
 
 from skillforge import __version__

@@ -23,7 +23,9 @@ console = Console()
 def version_callback(value: bool) -> None:
     """Display version information and exit."""
     if value:
-        console.print(f"[bold cyan]SkillForge[/bold cyan] version [green]{__version__}[/green]")
+        console.print(
+            f"[bold cyan]SkillForge[/bold cyan] version [green]{__version__}[/green]"
+        )
         raise typer.Exit()
 
 
@@ -49,7 +51,9 @@ def main(
 @app.command()
 def learn(
     topic: str = typer.Argument(..., help="The topic you want to learn"),
-    interactive: bool = typer.Option(True, "--interactive/--no-interactive", help="Enable interactive mode"),
+    interactive: bool = typer.Option(
+        True, "--interactive/--no-interactive", help="Enable interactive mode"
+    ),
 ) -> None:
     """
     Start a new learning session on a specific topic.
@@ -64,7 +68,8 @@ def learn(
             f"[bold green]Starting learning session![/bold green]\n\n"
             f"Topic: [cyan]{topic}[/cyan]\n"
             f"Interactive: [yellow]{'Yes' if interactive else 'No'}[/yellow]\n\n"
-            f"[dim]Note: Full course generation will be implemented in the next phase.[/dim]",
+            f"[dim]Note: Full course generation will be implemented "
+            f"in the next phase.[/dim]",
             title="SkillForge",
             border_style="green",
         )

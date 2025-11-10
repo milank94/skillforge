@@ -4,10 +4,8 @@ Tests for basic package functionality.
 Tests package imports, version information, and module structure.
 """
 
-import pytest
-
 import skillforge
-from skillforge import __version__, __author__, __email__
+from skillforge import __author__, __email__, __version__
 
 
 class TestPackageMetadata:
