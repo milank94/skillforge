@@ -12,6 +12,33 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Safe Sandbox**: Simulates command execution and file operations without actual system changes
 - **Multi-Domain**: Support for learning PyTorch, Docker, Kubernetes, programming languages, CLI tools, and more
 
+### Implementation Status
+
+**Phase 1: Complete ✓** (Basic Package Setup + CLI + Tests)
+- ✓ Modern Python packaging with pyproject.toml
+- ✓ CLI framework with Typer
+- ✓ Rich terminal formatting
+- ✓ Basic `learn` command (placeholder implementation)
+- ✓ Version display
+- ✓ Comprehensive test suite (25 tests, 96% coverage)
+- ✓ Development tooling configured (black, ruff, mypy, pytest)
+
+**Phase 2: Not Started** (Data Models)
+- ⏳ Pydantic models for Course, Lesson, Exercise
+- ⏳ Session management
+- ⏳ Configuration models
+
+**Phase 3: Not Started** (LLM Integration)
+- ⏳ LLM client abstraction
+- ⏳ Course generator
+- ⏳ Command simulator
+- ⏳ Validator engine
+
+**Phase 4: Not Started** (Interactive Learning)
+- ⏳ Interactive session loop
+- ⏳ Progress tracking
+- ⏳ Feedback system
+
 ---
 
 ## Development Commands
@@ -22,9 +49,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install dependencies (once pyproject.toml exists)
+# IMPORTANT: Upgrade pip first (pyproject.toml-only packaging requires pip 21.3+)
+python3 -m pip install --upgrade pip
+
+# Install dependencies
 pip install -e ".[dev]"  # Editable install with dev dependencies
 ```
+
+**Note**: On macOS, use `python3` explicitly. The pip upgrade is required for pyproject.toml-only packaging (no setup.py).
 
 ### Development
 ```bash
@@ -65,8 +97,6 @@ twine upload dist/*
 pipx install skillforge
 ```
 
-**Note**: Commands will be updated as the project structure is implemented.
-
 ---
 
 ## Project Goals
@@ -90,10 +120,14 @@ pipx install skillforge
 
 ### Tech Stack
 ```
-Core:
-- Python 3.9+
-- click or typer (CLI framework)
-- rich (terminal UI/formatting)
+Core (Implemented):
+- Python 3.9+ ✓
+- typer (CLI framework) ✓
+- rich (terminal UI/formatting) ✓
+- pytest + pytest-cov (testing) ✓
+- black, ruff, mypy (code quality) ✓
+
+Core (Planned):
 - anthropic or openai SDK (LLM integration)
 - pydantic (data validation and settings)
 
@@ -101,7 +135,6 @@ Optional/Future:
 - textual (TUI/GUI)
 - langchain (agentic orchestration)
 - sqlite3 (progress persistence)
-- pytest (testing)
 - docker (for isolated execution - future)
 ```
 
@@ -148,47 +181,50 @@ Optional/Future:
 ```
 skillforge/
 ├── skillforge/                 # Main package
-│   ├── __init__.py
-│   ├── cli.py                 # CLI entry point (click/typer)
-│   ├── core/
+│   ├── __init__.py            ✓ IMPLEMENTED (version, author, email)
+│   ├── cli.py                 ✓ IMPLEMENTED (CLI entry point with typer)
+│   ├── core/                  ⏳ TODO
 │   │   ├── __init__.py
 │   │   ├── course_generator.py    # LLM-based course creation
 │   │   ├── simulator.py           # Command/file simulation
 │   │   ├── validator.py           # Exercise validation
 │   │   └── session.py             # Session management
-│   ├── agents/
+│   ├── agents/                ⏳ TODO
 │   │   ├── __init__.py
 │   │   ├── teacher.py             # Main teaching agent
 │   │   └── evaluator.py           # Code evaluation agent
-│   ├── models/
+│   ├── models/                ⏳ TODO
 │   │   ├── __init__.py
 │   │   ├── course.py              # Course data models
 │   │   ├── lesson.py              # Lesson structure
 │   │   └── config.py              # Configuration models
-│   ├── templates/
+│   ├── templates/             ⏳ TODO
 │   │   └── course_templates/      # Pre-built course templates
-│   └── utils/
+│   └── utils/                 ⏳ TODO
 │       ├── __init__.py
 │       ├── llm_client.py          # LLM API wrapper
 │       └── output.py              # Rich formatting helpers
 ├── tests/
-│   ├── __init__.py
-│   ├── test_course_generator.py
-│   ├── test_simulator.py
-│   └── test_validator.py
-├── docs/
+│   ├── __init__.py            ✓ IMPLEMENTED
+│   ├── test_package.py        ✓ IMPLEMENTED (8 tests: metadata, imports)
+│   ├── test_cli.py            ✓ IMPLEMENTED (17 tests: CLI commands)
+│   ├── test_course_generator.py  ⏳ TODO
+│   ├── test_simulator.py     ⏳ TODO
+│   └── test_validator.py     ⏳ TODO
+├── docs/                      ⏳ TODO
 │   ├── getting-started.md
 │   ├── architecture.md
 │   └── contributing.md
-├── examples/
+├── examples/                  ⏳ TODO
 │   └── sample_courses/
-├── pyproject.toml             # Modern Python packaging
-├── setup.py                   # Fallback setup
-├── README.md
-├── LICENSE
-├── CLAUDE.md                  # This file
-└── .gitignore
+├── pyproject.toml             ✓ IMPLEMENTED (Modern Python packaging)
+├── README.md                  ✓ IMPLEMENTED
+├── LICENSE                    ✓ IMPLEMENTED (MIT)
+├── CLAUDE.md                  ✓ IMPLEMENTED (This file)
+└── .gitignore                 ✓ IMPLEMENTED
 ```
+
+**Current Test Coverage**: 25 tests, 96% code coverage (28/29 lines in skillforge/)
 
 ---
 
@@ -204,12 +240,13 @@ skillforge/
 **Implementation**: Abstract LLM client interface
 
 ### 2. CLI Framework
-**Decision**: Start with `typer` (consider `click` as alternative)
+**Decision**: `typer` ✓ IMPLEMENTED
 **Rationale**:
 - `typer` has better type hints (uses Pydantic)
 - Automatic help generation
 - Good integration with modern Python
-- Easy to migrate to `click` if needed
+- Rich integration for beautiful terminal output
+- Easy to migrate to `click` if needed (Typer is built on Click)
 
 ### 3. Simulation Strategy
 **Decision**: Mock/simulate, don't execute actual commands
@@ -365,23 +402,45 @@ skillforge config set llm.provider anthropic
 
 ## Testing Strategy
 
-### Unit Tests
+### Implemented Tests (Phase 1) ✓
+**25 tests, 96% coverage**
+
+**test_package.py** (8 tests):
+- Package metadata (version, author, email)
+- Module imports and structure
+- Version format validation (semantic versioning)
+
+**test_cli.py** (17 tests):
+- Version flag display (`--version`, `-v`)
+- Help functionality (`--help`, no args, command help)
+- Learn command with various inputs
+- Interactive/non-interactive modes
+- Output formatting with Rich
+- Error handling for invalid commands
+
+**Coverage Details**:
+- 28/29 statements covered in skillforge/
+- Only uncovered line: `if __name__ == "__main__": app()` (boilerplate, intentionally not tested)
+
+### Planned Tests (Future Phases)
+
+**Unit Tests**:
 - Course generation with mocked LLM responses
 - Command simulation pattern matching
 - Validation logic and feedback generation
 - File system simulation operations
 
-### Integration Tests
+**Integration Tests**:
 - Full course flow end-to-end (with mocked LLM)
 - CLI command parsing and execution
 - Session persistence and resumption
 
-### Manual Testing
+**Manual Testing**:
 - Real LLM integration with various topics
 - User experience flow testing
 - Performance with different course types
 
-**Coverage Target**: >80% for core modules
+**Coverage Target**: >80% for all modules (currently at 96%)
 
 ---
 
@@ -459,7 +518,25 @@ def learn(topic: str):
 ---
 
 **Last Updated**: 2025-11-10
-**Project Status**: Initial setup - Phase 1 (MVP Development)
+**Project Status**: Phase 1 Complete ✓ (Basic Setup + CLI + Tests)
+
+---
+
+## Changelog
+
+### Phase 1 - Basic Setup (2025-11-10) ✓
+- Created modern Python package with pyproject.toml (no setup.py)
+- Implemented CLI with Typer and Rich formatting
+- Added `learn` command (placeholder implementation)
+- Added version display functionality
+- Created comprehensive test suite (25 tests, 96% coverage)
+- Configured development tooling (black, ruff, mypy, pytest)
+- Branch: `feature/basic-setup` merged to `main`
+
+### Next Steps
+- Phase 2: Implement Pydantic data models (Course, Lesson, Exercise)
+- Phase 3: LLM integration (course generator, simulator, validator)
+- Phase 4: Interactive learning session loop
 
 ---
 
