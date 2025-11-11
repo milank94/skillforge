@@ -1,9 +1,11 @@
 """
 Tests for Pydantic data models.
 
-Tests the Course, Lesson, Exercise, and Config models to ensure proper
+Tests the Course, Lesson, Exercise, Config, and Progress models to ensure proper
 validation, nested relationships, and default values.
 """
+
+from datetime import datetime
 
 import pytest
 from pydantic import ValidationError
@@ -11,11 +13,15 @@ from pydantic import ValidationError
 from skillforge.models import (
     AppConfig,
     Course,
+    CourseProgress,
     Difficulty,
     Exercise,
+    ExerciseProgress,
     Lesson,
+    LessonProgress,
     LLMConfig,
     LLMProvider,
+    ProgressStatus,
 )
 
 
@@ -275,3 +281,209 @@ class TestEnums:
         """Test that LLMProvider enum values can be compared to strings."""
         assert LLMProvider.ANTHROPIC == "anthropic"
         assert LLMProvider.OPENAI == "openai"
+
+    def test_progress_status_enum_values(self) -> None:
+        """Test that ProgressStatus enum has expected values."""
+        assert ProgressStatus.NOT_STARTED.value == "not_started"
+        assert ProgressStatus.IN_PROGRESS.value == "in_progress"
+        assert ProgressStatus.COMPLETED.value == "completed"
+        assert ProgressStatus.FAILED.value == "failed"
+        assert len(ProgressStatus) == 4
+
+    def test_progress_status_enum_string_comparison(self) -> None:
+        """Test that ProgressStatus enum values can be compared to strings."""
+        assert ProgressStatus.NOT_STARTED == "not_started"
+        assert ProgressStatus.IN_PROGRESS == "in_progress"
+        assert ProgressStatus.COMPLETED == "completed"
+        assert ProgressStatus.FAILED == "failed"
+
+
+class TestExerciseProgress:
+    """Test the ExerciseProgress model."""
+
+    def test_exercise_progress_creation(self) -> None:
+        """Test creating exercise progress."""
+        progress = ExerciseProgress(exercise_id="ex1")
+        assert progress.exercise_id == "ex1"
+        assert progress.status == ProgressStatus.NOT_STARTED
+        assert progress.attempts == 0
+        assert progress.user_answer is None
+        assert progress.completed_at is None
+
+    def test_exercise_progress_with_answer(self) -> None:
+        """Test exercise progress with user answer."""
+        progress = ExerciseProgress(
+            exercise_id="ex2",
+            status=ProgressStatus.COMPLETED,
+            attempts=3,
+            user_answer="print('hello')",
+        )
+        assert progress.exercise_id == "ex2"
+        assert progress.status == ProgressStatus.COMPLETED
+        assert progress.attempts == 3
+        assert progress.user_answer == "print('hello')"
+
+    def test_exercise_progress_with_timestamp(self) -> None:
+        """Test exercise progress with completion timestamp."""
+        now = datetime.now()
+        progress = ExerciseProgress(
+            exercise_id="ex3",
+            status=ProgressStatus.COMPLETED,
+            completed_at=now,
+        )
+        assert progress.completed_at == now
+
+    def test_exercise_progress_invalid_attempts(self) -> None:
+        """Test that negative attempts are rejected."""
+        with pytest.raises(ValidationError):
+            ExerciseProgress(exercise_id="ex4", attempts=-1)
+
+    def test_exercise_progress_status_validation(self) -> None:
+        """Test that invalid status values are rejected."""
+        with pytest.raises(ValidationError):
+            ExerciseProgress(
+                exercise_id="ex5",
+                status="invalid_status",  # type: ignore
+            )
+
+
+class TestLessonProgress:
+    """Test the LessonProgress model."""
+
+    def test_lesson_progress_creation(self) -> None:
+        """Test creating lesson progress."""
+        progress = LessonProgress(lesson_id="lesson1")
+        assert progress.lesson_id == "lesson1"
+        assert progress.status == ProgressStatus.NOT_STARTED
+        assert progress.exercise_progress == []
+        assert progress.started_at is None
+        assert progress.completed_at is None
+
+    def test_lesson_progress_with_exercises(self) -> None:
+        """Test lesson progress with exercise progress."""
+        ex_progress1 = ExerciseProgress(
+            exercise_id="ex1", status=ProgressStatus.COMPLETED
+        )
+        ex_progress2 = ExerciseProgress(
+            exercise_id="ex2", status=ProgressStatus.IN_PROGRESS
+        )
+
+        lesson_progress = LessonProgress(
+            lesson_id="lesson2",
+            status=ProgressStatus.IN_PROGRESS,
+            exercise_progress=[ex_progress1, ex_progress2],
+        )
+        assert len(lesson_progress.exercise_progress) == 2
+        assert lesson_progress.exercise_progress[0].exercise_id == "ex1"
+        assert lesson_progress.exercise_progress[1].status == ProgressStatus.IN_PROGRESS
+
+    def test_lesson_progress_with_timestamps(self) -> None:
+        """Test lesson progress with timestamps."""
+        started = datetime.now()
+        lesson_progress = LessonProgress(
+            lesson_id="lesson3",
+            status=ProgressStatus.IN_PROGRESS,
+            started_at=started,
+        )
+        assert lesson_progress.started_at == started
+        assert lesson_progress.completed_at is None
+
+    def test_lesson_progress_nested_validation(self) -> None:
+        """Test that nested ExerciseProgress objects are validated."""
+        with pytest.raises(ValidationError):
+            LessonProgress(
+                lesson_id="lesson4",
+                exercise_progress=[{"exercise_id": "ex1", "attempts": -1}],  # type: ignore
+            )
+
+
+class TestCourseProgress:
+    """Test the CourseProgress model."""
+
+    def test_course_progress_creation(self) -> None:
+        """Test creating course progress."""
+        progress = CourseProgress(course_id="course1", user_id="user1")
+        assert progress.course_id == "course1"
+        assert progress.user_id == "user1"
+        assert progress.status == ProgressStatus.NOT_STARTED
+        assert progress.lesson_progress == []
+        assert progress.current_lesson_index == 0
+        assert progress.started_at is None
+        assert progress.completed_at is None
+
+    def test_course_progress_with_lessons(self) -> None:
+        """Test course progress with lesson progress."""
+        lesson_progress1 = LessonProgress(
+            lesson_id="lesson1", status=ProgressStatus.COMPLETED
+        )
+        lesson_progress2 = LessonProgress(
+            lesson_id="lesson2", status=ProgressStatus.IN_PROGRESS
+        )
+
+        course_progress = CourseProgress(
+            course_id="course2",
+            user_id="user2",
+            status=ProgressStatus.IN_PROGRESS,
+            lesson_progress=[lesson_progress1, lesson_progress2],
+            current_lesson_index=1,
+        )
+        assert len(course_progress.lesson_progress) == 2
+        assert course_progress.current_lesson_index == 1
+        assert course_progress.lesson_progress[0].status == ProgressStatus.COMPLETED
+        assert course_progress.lesson_progress[1].status == ProgressStatus.IN_PROGRESS
+
+    def test_course_progress_with_timestamps(self) -> None:
+        """Test course progress with timestamps."""
+        started = datetime.now()
+        course_progress = CourseProgress(
+            course_id="course3",
+            user_id="user3",
+            status=ProgressStatus.IN_PROGRESS,
+            started_at=started,
+        )
+        assert course_progress.started_at == started
+        assert course_progress.completed_at is None
+
+    def test_course_progress_invalid_lesson_index(self) -> None:
+        """Test that negative lesson index is rejected."""
+        with pytest.raises(ValidationError):
+            CourseProgress(
+                course_id="course4",
+                user_id="user4",
+                current_lesson_index=-1,
+            )
+
+    def test_course_progress_nested_validation(self) -> None:
+        """Test that nested LessonProgress objects are validated."""
+        with pytest.raises(ValidationError):
+            CourseProgress(
+                course_id="course5",
+                user_id="user5",
+                lesson_progress=[{"lesson_id": "lesson1", "started_at": "invalid"}],  # type: ignore
+            )
+
+    def test_course_progress_full_hierarchy(self) -> None:
+        """Test full progress hierarchy: course -> lesson -> exercise."""
+        ex_progress = ExerciseProgress(
+            exercise_id="ex1",
+            status=ProgressStatus.COMPLETED,
+            attempts=2,
+            user_answer="answer",
+        )
+        lesson_progress = LessonProgress(
+            lesson_id="lesson1",
+            status=ProgressStatus.COMPLETED,
+            exercise_progress=[ex_progress],
+        )
+        course_progress = CourseProgress(
+            course_id="course6",
+            user_id="user6",
+            status=ProgressStatus.IN_PROGRESS,
+            lesson_progress=[lesson_progress],
+        )
+
+        assert len(course_progress.lesson_progress) == 1
+        assert len(course_progress.lesson_progress[0].exercise_progress) == 1
+        assert (
+            course_progress.lesson_progress[0].exercise_progress[0].exercise_id == "ex1"
+        )

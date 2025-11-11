@@ -29,3 +29,16 @@ class LLMProvider(str, Enum):
 
     ANTHROPIC = "anthropic"
     OPENAI = "openai"
+
+
+class ProgressStatus(str, Enum):
+    """
+    Status of progress through a learning component.
+
+    Inherits from str to allow direct string comparison and serialization.
+    """
+
+    NOT_STARTED = "not_started"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    FAILED = "failed"
