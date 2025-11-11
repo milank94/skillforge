@@ -8,7 +8,15 @@ validation, nested relationships, and default values.
 import pytest
 from pydantic import ValidationError
 
-from skillforge.models import AppConfig, Course, Exercise, Lesson, LLMConfig
+from skillforge.models import (
+    AppConfig,
+    Course,
+    Difficulty,
+    Exercise,
+    Lesson,
+    LLMConfig,
+    LLMProvider,
+)
 
 
 class TestExercise:
@@ -106,11 +114,11 @@ class TestCourse:
             id="course1",
             topic="Python Programming",
             description="Learn Python from scratch",
-            difficulty="beginner",
+            difficulty=Difficulty.BEGINNER,
         )
         assert course.id == "course1"
         assert course.topic == "Python Programming"
-        assert course.difficulty == "beginner"
+        assert course.difficulty == Difficulty.BEGINNER
         assert course.lessons == []
 
     def test_course_with_lessons(self) -> None:
@@ -126,7 +134,7 @@ class TestCourse:
             id="course2",
             topic="Python",
             description="Intro course",
-            difficulty="beginner",
+            difficulty=Difficulty.BEGINNER,
             lessons=[lesson],
         )
         assert len(course.lessons) == 1
@@ -146,9 +154,30 @@ class TestCourse:
                 id="course4",
                 topic="Bad Course",
                 description="Test",
-                difficulty="beginner",
+                difficulty=Difficulty.BEGINNER,
                 lessons=[{"id": "lesson1"}],  # type: ignore  # Missing title and objectives
             )
+
+    def test_course_invalid_difficulty(self) -> None:
+        """Test that invalid difficulty values are rejected."""
+        with pytest.raises(ValidationError):
+            Course(
+                id="course5",
+                topic="Test Course",
+                description="Test",
+                difficulty="expert",  # type: ignore  # Invalid difficulty
+            )
+
+    def test_course_difficulty_enum_values(self) -> None:
+        """Test all valid difficulty enum values."""
+        for difficulty in Difficulty:
+            course = Course(
+                id=f"course_{difficulty.value}",
+                topic="Test",
+                description="Test",
+                difficulty=difficulty,
+            )
+            assert course.difficulty == difficulty
 
 
 class TestLLMConfig:
@@ -157,29 +186,45 @@ class TestLLMConfig:
     def test_llm_config_creation(self) -> None:
         """Test creating LLM configuration."""
         config = LLMConfig(
-            provider="anthropic", model="claude-sonnet-4-5-20250929", temperature=0.7
+            provider=LLMProvider.ANTHROPIC,
+            model="claude-sonnet-4-5-20250929",
+            temperature=0.7,
         )
-        assert config.provider == "anthropic"
+        assert config.provider == LLMProvider.ANTHROPIC
         assert config.model == "claude-sonnet-4-5-20250929"
         assert config.temperature == 0.7
 
     def test_llm_config_default_temperature(self) -> None:
         """Test that temperature has a default value."""
-        config = LLMConfig(provider="openai", model="gpt-4")
+        config = LLMConfig(provider=LLMProvider.OPENAI, model="gpt-4")
         assert config.temperature == 0.7
 
     def test_llm_config_temperature_validation(self) -> None:
         """Test that temperature is validated (0.0-1.0)."""
         with pytest.raises(ValidationError):
-            LLMConfig(provider="anthropic", model="test", temperature=1.5)
+            LLMConfig(provider=LLMProvider.ANTHROPIC, model="test", temperature=1.5)
 
         with pytest.raises(ValidationError):
-            LLMConfig(provider="anthropic", model="test", temperature=-0.1)
+            LLMConfig(provider=LLMProvider.ANTHROPIC, model="test", temperature=-0.1)
 
     def test_llm_config_missing_required_fields(self) -> None:
         """Test that required fields are enforced."""
         with pytest.raises(ValidationError):
-            LLMConfig(provider="anthropic")  # type: ignore
+            LLMConfig(provider=LLMProvider.ANTHROPIC)  # type: ignore
+
+    def test_llm_config_invalid_provider(self) -> None:
+        """Test that invalid provider values are rejected."""
+        with pytest.raises(ValidationError):
+            LLMConfig(
+                provider="google",  # type: ignore  # Invalid provider
+                model="gemini-pro",
+            )
+
+    def test_llm_config_provider_enum_values(self) -> None:
+        """Test all valid provider enum values."""
+        for provider in LLMProvider:
+            config = LLMConfig(provider=provider, model="test-model")
+            assert config.provider == provider
 
 
 class TestAppConfig:
@@ -187,14 +232,14 @@ class TestAppConfig:
 
     def test_app_config_creation(self) -> None:
         """Test creating app configuration."""
-        llm_config = LLMConfig(provider="anthropic", model="claude-3")
+        llm_config = LLMConfig(provider=LLMProvider.ANTHROPIC, model="claude-3")
         app_config = AppConfig(llm=llm_config, data_dir="/custom/path")
-        assert app_config.llm.provider == "anthropic"
+        assert app_config.llm.provider == LLMProvider.ANTHROPIC
         assert app_config.data_dir == "/custom/path"
 
     def test_app_config_default_data_dir(self) -> None:
         """Test that data_dir has a default value."""
-        llm_config = LLMConfig(provider="openai", model="gpt-4")
+        llm_config = LLMConfig(provider=LLMProvider.OPENAI, model="gpt-4")
         app_config = AppConfig(llm=llm_config)
         assert app_config.data_dir == "~/.skillforge"
 
@@ -202,3 +247,31 @@ class TestAppConfig:
         """Test that nested LLMConfig is validated."""
         with pytest.raises(ValidationError):
             AppConfig(llm={"provider": "anthropic"})  # type: ignore  # Missing model
+
+
+class TestEnums:
+    """Test enum definitions and behavior."""
+
+    def test_difficulty_enum_values(self) -> None:
+        """Test that Difficulty enum has expected values."""
+        assert Difficulty.BEGINNER.value == "beginner"
+        assert Difficulty.INTERMEDIATE.value == "intermediate"
+        assert Difficulty.ADVANCED.value == "advanced"
+        assert len(Difficulty) == 3
+
+    def test_difficulty_enum_string_comparison(self) -> None:
+        """Test that Difficulty enum values can be compared to strings."""
+        assert Difficulty.BEGINNER == "beginner"
+        assert Difficulty.INTERMEDIATE == "intermediate"
+        assert Difficulty.ADVANCED == "advanced"
+
+    def test_llm_provider_enum_values(self) -> None:
+        """Test that LLMProvider enum has expected values."""
+        assert LLMProvider.ANTHROPIC.value == "anthropic"
+        assert LLMProvider.OPENAI.value == "openai"
+        assert len(LLMProvider) == 2
+
+    def test_llm_provider_enum_string_comparison(self) -> None:
+        """Test that LLMProvider enum values can be compared to strings."""
+        assert LLMProvider.ANTHROPIC == "anthropic"
+        assert LLMProvider.OPENAI == "openai"

@@ -7,6 +7,15 @@ exercises, and configuration settings.
 
 from .config import AppConfig, LLMConfig
 from .course import Course
+from .enums import Difficulty, LLMProvider
 from .lesson import Exercise, Lesson
 
-__all__ = ["Course", "Lesson", "Exercise", "AppConfig", "LLMConfig"]
+__all__ = [
+    "Course",
+    "Lesson",
+    "Exercise",
+    "AppConfig",
+    "LLMConfig",
+    "Difficulty",
+    "LLMProvider",
+]
