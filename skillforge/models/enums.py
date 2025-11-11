@@ -42,3 +42,16 @@ class ProgressStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     FAILED = "failed"
+
+
+class SessionState(str, Enum):
+    """
+    State of an active learning session.
+
+    Inherits from str to allow direct string comparison and serialization.
+    """
+
+    ACTIVE = "active"
+    PAUSED = "paused"
+    COMPLETED = "completed"
+    ABANDONED = "abandoned"

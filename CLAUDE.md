@@ -23,10 +23,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✓ Comprehensive test suite (25 tests, 96% coverage)
 - ✓ Development tooling configured (black, ruff, mypy, pytest)
 
-**Phase 2: Not Started** (Data Models)
-- ⏳ Pydantic models for Course, Lesson, Exercise
-- ⏳ Session management
-- ⏳ Configuration models
+**Phase 2: In Progress** (Data Models)
+- ✓ Pydantic models for Course, Lesson, Exercise
+- ✓ Configuration models (AppConfig, LLMConfig)
+- ✓ Enums for constants (Difficulty, LLMProvider, ProgressStatus, SessionState)
+- ✓ Progress tracking models (CourseProgress, LessonProgress, ExerciseProgress)
+- ✓ Session management (LearningSession)
+- ⏳ Model helper methods
+- ⏳ Serialization utilities
 
 **Phase 3: Not Started** (LLM Integration)
 - ⏳ LLM client abstraction
@@ -193,11 +197,14 @@ skillforge/
 │   │   ├── __init__.py
 │   │   ├── teacher.py             # Main teaching agent
 │   │   └── evaluator.py           # Code evaluation agent
-│   ├── models/                ⏳ TODO
-│   │   ├── __init__.py
-│   │   ├── course.py              # Course data models
-│   │   ├── lesson.py              # Lesson structure
-│   │   └── config.py              # Configuration models
+│   ├── models/                ✓ IMPLEMENTED
+│   │   ├── __init__.py            ✓ (exports all models)
+│   │   ├── enums.py               ✓ (Difficulty, LLMProvider, ProgressStatus, SessionState)
+│   │   ├── course.py              ✓ (Course model)
+│   │   ├── lesson.py              ✓ (Lesson, Exercise models)
+│   │   ├── config.py              ✓ (AppConfig, LLMConfig)
+│   │   ├── progress.py            ✓ (CourseProgress, LessonProgress, ExerciseProgress)
+│   │   └── session.py             ✓ (LearningSession)
 │   ├── templates/             ⏳ TODO
 │   │   └── course_templates/      # Pre-built course templates
 │   └── utils/                 ⏳ TODO
@@ -224,7 +231,7 @@ skillforge/
 └── .gitignore                 ✓ IMPLEMENTED
 ```
 
-**Current Test Coverage**: 25 tests, 96% code coverage (28/29 lines in skillforge/)
+**Current Test Coverage**: 79 tests, 99% code coverage (125/126 lines in skillforge/)
 
 ---
 
@@ -533,8 +540,17 @@ def learn(topic: str):
 - Configured development tooling (black, ruff, mypy, pytest)
 - Branch: `feature/basic-setup` merged to `main`
 
+### Phase 2 - Data Models (2025-11-10) - In Progress
+- ✓ Baseline Pydantic models (Course, Lesson, Exercise)
+- ✓ Configuration models (AppConfig, LLMConfig)
+- ✓ Enums (Difficulty, LLMProvider, ProgressStatus, SessionState)
+- ✓ Progress tracking models (CourseProgress, LessonProgress, ExerciseProgress)
+- ✓ Session management (LearningSession)
+- Comprehensive test suite expanded (79 tests, 99% coverage)
+- Branch: `feature/phase2-data-models` (active)
+
 ### Next Steps
-- Phase 2: Implement Pydantic data models (Course, Lesson, Exercise)
+- Phase 2 (remaining): Model helper methods, serialization utilities
 - Phase 3: LLM integration (course generator, simulator, validator)
 - Phase 4: Interactive learning session loop
 

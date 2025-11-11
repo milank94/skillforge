@@ -1,8 +1,8 @@
 """
 Tests for Pydantic data models.
 
-Tests the Course, Lesson, Exercise, Config, and Progress models to ensure proper
-validation, nested relationships, and default values.
+Tests the Course, Lesson, Exercise, Config, Progress, and Session models to ensure
+proper validation, nested relationships, and default values.
 """
 
 from datetime import datetime
@@ -17,11 +17,13 @@ from skillforge.models import (
     Difficulty,
     Exercise,
     ExerciseProgress,
+    LearningSession,
     Lesson,
     LessonProgress,
     LLMConfig,
     LLMProvider,
     ProgressStatus,
+    SessionState,
 )
 
 
@@ -487,3 +489,195 @@ class TestCourseProgress:
         assert (
             course_progress.lesson_progress[0].exercise_progress[0].exercise_id == "ex1"
         )
+
+
+class TestLearningSession:
+    """Test the LearningSession model."""
+
+    def test_session_creation(self) -> None:
+        """Test creating a learning session."""
+        course = Course(
+            id="course1",
+            topic="Python",
+            description="Learn Python",
+            difficulty=Difficulty.BEGINNER,
+        )
+        progress = CourseProgress(course_id="course1", user_id="user1")
+
+        session = LearningSession(course=course, progress=progress)
+
+        assert session.session_id is not None
+        assert len(session.session_id) > 0  # UUID should be generated
+        assert session.course == course
+        assert session.progress == progress
+        assert session.state == SessionState.ACTIVE
+        assert session.current_lesson_id is None
+        assert session.current_exercise_id is None
+        assert session.created_at is not None
+        assert session.last_activity_at is not None
+        assert session.paused_at is None
+        assert session.completed_at is None
+
+    def test_session_with_custom_state(self) -> None:
+        """Test creating session with custom state."""
+        course = Course(
+            id="course2",
+            topic="Docker",
+            description="Learn Docker",
+            difficulty=Difficulty.INTERMEDIATE,
+        )
+        progress = CourseProgress(course_id="course2", user_id="user2")
+
+        session = LearningSession(
+            course=course,
+            progress=progress,
+            state=SessionState.PAUSED,
+        )
+
+        assert session.state == SessionState.PAUSED
+
+    def test_session_with_current_position(self) -> None:
+        """Test session with current lesson and exercise."""
+        course = Course(
+            id="course3",
+            topic="Kubernetes",
+            description="Learn K8s",
+            difficulty=Difficulty.ADVANCED,
+        )
+        progress = CourseProgress(course_id="course3", user_id="user3")
+
+        session = LearningSession(
+            course=course,
+            progress=progress,
+            current_lesson_id="lesson1",
+            current_exercise_id="ex1",
+        )
+
+        assert session.current_lesson_id == "lesson1"
+        assert session.current_exercise_id == "ex1"
+
+    def test_session_with_timestamps(self) -> None:
+        """Test session with custom timestamps."""
+        course = Course(
+            id="course4",
+            topic="FastAPI",
+            description="Learn FastAPI",
+            difficulty=Difficulty.INTERMEDIATE,
+        )
+        progress = CourseProgress(course_id="course4", user_id="user4")
+
+        created = datetime(2025, 1, 1, 10, 0, 0)
+        paused = datetime(2025, 1, 1, 11, 0, 0)
+
+        session = LearningSession(
+            course=course,
+            progress=progress,
+            state=SessionState.PAUSED,
+            created_at=created,
+            last_activity_at=paused,
+            paused_at=paused,
+        )
+
+        assert session.created_at == created
+        assert session.last_activity_at == paused
+        assert session.paused_at == paused
+
+    def test_session_completed_state(self) -> None:
+        """Test session in completed state."""
+        course = Course(
+            id="course5",
+            topic="PyTorch",
+            description="Learn PyTorch",
+            difficulty=Difficulty.ADVANCED,
+        )
+        progress = CourseProgress(
+            course_id="course5",
+            user_id="user5",
+            status=ProgressStatus.COMPLETED,
+        )
+
+        completed = datetime.now()
+        session = LearningSession(
+            course=course,
+            progress=progress,
+            state=SessionState.COMPLETED,
+            completed_at=completed,
+        )
+
+        assert session.state == SessionState.COMPLETED
+        assert session.completed_at == completed
+
+    def test_session_with_full_course_structure(self) -> None:
+        """Test session with complete course and progress hierarchy."""
+        # Create full course structure
+        exercise = Exercise(id="ex1", instruction="Hello world")
+        lesson = Lesson(
+            id="lesson1",
+            title="Intro",
+            objectives=["Learn basics"],
+            exercises=[exercise],
+        )
+        course = Course(
+            id="course6",
+            topic="Python Basics",
+            description="Learn Python",
+            difficulty=Difficulty.BEGINNER,
+            lessons=[lesson],
+        )
+
+        # Create progress tracking
+        ex_progress = ExerciseProgress(exercise_id="ex1")
+        lesson_progress = LessonProgress(
+            lesson_id="lesson1",
+            exercise_progress=[ex_progress],
+        )
+        progress = CourseProgress(
+            course_id="course6",
+            user_id="user6",
+            lesson_progress=[lesson_progress],
+        )
+
+        # Create session
+        session = LearningSession(
+            course=course,
+            progress=progress,
+            current_lesson_id="lesson1",
+            current_exercise_id="ex1",
+        )
+
+        assert len(session.course.lessons) == 1
+        assert len(session.progress.lesson_progress) == 1
+        assert session.current_lesson_id == "lesson1"
+        assert session.current_exercise_id == "ex1"
+
+    def test_session_state_validation(self) -> None:
+        """Test that invalid session states are rejected."""
+        course = Course(
+            id="course7",
+            topic="Test",
+            description="Test",
+            difficulty=Difficulty.BEGINNER,
+        )
+        progress = CourseProgress(course_id="course7", user_id="user7")
+
+        with pytest.raises(ValidationError):
+            LearningSession(
+                course=course,
+                progress=progress,
+                state="invalid_state",  # type: ignore
+            )
+
+    def test_session_state_enum_values(self) -> None:
+        """Test that SessionState enum has expected values."""
+        assert SessionState.ACTIVE.value == "active"
+        assert SessionState.PAUSED.value == "paused"
+        assert SessionState.COMPLETED.value == "completed"
+        assert SessionState.ABANDONED.value == "abandoned"
+        assert len(SessionState) == 4
+
+    def test_session_state_enum_string_comparison(self) -> None:
+        """Test that SessionState enum values can be compared to strings."""
+        assert SessionState.ACTIVE == "active"
+        assert SessionState.PAUSED == "paused"
+        assert SessionState.COMPLETED == "completed"
+        assert SessionState.ABANDONED == "abandoned"
