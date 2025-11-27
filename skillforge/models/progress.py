@@ -62,6 +62,48 @@ class LessonProgress(BaseModel):
         None, description="When the lesson was completed"
     )
 
+    def get_exercise_progress(self, exercise_id: str) -> Optional[ExerciseProgress]:
+        """
+        Get progress for a specific exercise.
+
+        Args:
+            exercise_id: The ID of the exercise
+
+        Returns:
+            The ExerciseProgress object if found, None otherwise
+        """
+        for progress in self.exercise_progress:
+            if progress.exercise_id == exercise_id:
+                return progress
+        return None
+
+    def calculate_completion_percentage(self) -> float:
+        """
+        Calculate the completion percentage for this lesson.
+
+        Returns:
+            Percentage of completed exercises (0.0 to 100.0)
+        """
+        if not self.exercise_progress:
+            return 0.0
+        completed = sum(
+            1 for ex in self.exercise_progress if ex.status == ProgressStatus.COMPLETED
+        )
+        return (completed / len(self.exercise_progress)) * 100.0
+
+    def is_completed(self) -> bool:
+        """
+        Check if all exercises in the lesson are completed.
+
+        Returns:
+            True if all exercises are completed, False otherwise
+        """
+        if not self.exercise_progress:
+            return False
+        return all(
+            ex.status == ProgressStatus.COMPLETED for ex in self.exercise_progress
+        )
+
 
 class CourseProgress(BaseModel):
     """
@@ -94,3 +136,75 @@ class CourseProgress(BaseModel):
     completed_at: Optional[datetime] = Field(
         None, description="When the course was completed"
     )
+
+    def get_lesson_progress(self, lesson_id: str) -> Optional[LessonProgress]:
+        """
+        Get progress for a specific lesson.
+
+        Args:
+            lesson_id: The ID of the lesson
+
+        Returns:
+            The LessonProgress object if found, None otherwise
+        """
+        for progress in self.lesson_progress:
+            if progress.lesson_id == lesson_id:
+                return progress
+        return None
+
+    def get_current_lesson_progress(self) -> Optional[LessonProgress]:
+        """
+        Get the progress for the current lesson.
+
+        Returns:
+            The LessonProgress for the current lesson if valid index, None otherwise
+        """
+        if 0 <= self.current_lesson_index < len(self.lesson_progress):
+            return self.lesson_progress[self.current_lesson_index]
+        return None
+
+    def calculate_completion_percentage(self) -> float:
+        """
+        Calculate the overall completion percentage for this course.
+
+        Returns:
+            Percentage of completed lessons (0.0 to 100.0)
+        """
+        if not self.lesson_progress:
+            return 0.0
+        completed = sum(
+            1
+            for lesson in self.lesson_progress
+            if lesson.status == ProgressStatus.COMPLETED
+        )
+        return (completed / len(self.lesson_progress)) * 100.0
+
+    def is_completed(self) -> bool:
+        """
+        Check if all lessons in the course are completed.
+
+        Returns:
+            True if all lessons are completed, False otherwise
+        """
+        if not self.lesson_progress:
+            return False
+        return all(
+            lesson.status == ProgressStatus.COMPLETED for lesson in self.lesson_progress
+        )
+
+    def mark_lesson_complete(self, lesson_id: str) -> bool:
+        """
+        Mark a specific lesson as completed.
+
+        Args:
+            lesson_id: The ID of the lesson to mark complete
+
+        Returns:
+            True if lesson was found and marked, False otherwise
+        """
+        progress = self.get_lesson_progress(lesson_id)
+        if progress:
+            progress.status = ProgressStatus.COMPLETED
+            progress.completed_at = datetime.now()
+            return True
+        return False

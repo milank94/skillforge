@@ -53,3 +53,41 @@ class Lesson(BaseModel):
     exercises: list[Exercise] = Field(
         default_factory=list, description="Exercises in this lesson"
     )
+
+    def get_exercise_by_id(self, exercise_id: str) -> Optional[Exercise]:
+        """
+        Get an exercise by its ID.
+
+        Args:
+            exercise_id: The ID of the exercise to find
+
+        Returns:
+            The Exercise object if found, None otherwise
+        """
+        for exercise in self.exercises:
+            if exercise.id == exercise_id:
+                return exercise
+        return None
+
+    def get_exercise_by_index(self, index: int) -> Optional[Exercise]:
+        """
+        Get an exercise by its index in the lesson.
+
+        Args:
+            index: The zero-based index of the exercise
+
+        Returns:
+            The Exercise object if index is valid, None otherwise
+        """
+        if 0 <= index < len(self.exercises):
+            return self.exercises[index]
+        return None
+
+    def total_exercises(self) -> int:
+        """
+        Get the total number of exercises in the lesson.
+
+        Returns:
+            The number of exercises
+        """
+        return len(self.exercises)

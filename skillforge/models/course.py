@@ -4,6 +4,8 @@ Course data model.
 This module defines the structure for a complete learning course.
 """
 
+from typing import Optional
+
 from pydantic import BaseModel, Field
 
 from .enums import Difficulty
@@ -32,3 +34,50 @@ class Course(BaseModel):
     lessons: list[Lesson] = Field(
         default_factory=list, description="Lessons in this course"
     )
+
+    def get_lesson_by_id(self, lesson_id: str) -> Optional[Lesson]:
+        """
+        Get a lesson by its ID.
+
+        Args:
+            lesson_id: The ID of the lesson to find
+
+        Returns:
+            The Lesson object if found, None otherwise
+        """
+        for lesson in self.lessons:
+            if lesson.id == lesson_id:
+                return lesson
+        return None
+
+    def get_lesson_by_index(self, index: int) -> Optional[Lesson]:
+        """
+        Get a lesson by its index in the course.
+
+        Args:
+            index: The zero-based index of the lesson
+
+        Returns:
+            The Lesson object if index is valid, None otherwise
+        """
+        if 0 <= index < len(self.lessons):
+            return self.lessons[index]
+        return None
+
+    def total_lessons(self) -> int:
+        """
+        Get the total number of lessons in the course.
+
+        Returns:
+            The number of lessons
+        """
+        return len(self.lessons)
+
+    def total_exercises(self) -> int:
+        """
+        Get the total number of exercises across all lessons.
+
+        Returns:
+            The total count of exercises
+        """
+        return sum(len(lesson.exercises) for lesson in self.lessons)

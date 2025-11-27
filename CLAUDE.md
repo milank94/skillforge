@@ -29,7 +29,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✓ Enums for constants (Difficulty, LLMProvider, ProgressStatus, SessionState)
 - ✓ Progress tracking models (CourseProgress, LessonProgress, ExerciseProgress)
 - ✓ Session management (LearningSession)
-- ⏳ Model helper methods
+- ✓ Model helper methods (navigation, calculation, state management)
 - ⏳ Serialization utilities
 
 **Phase 3: Not Started** (LLM Integration)
@@ -231,7 +231,7 @@ skillforge/
 └── .gitignore                 ✓ IMPLEMENTED
 ```
 
-**Current Test Coverage**: 79 tests, 99% code coverage (125/126 lines in skillforge/)
+**Current Test Coverage**: 101 tests, 97% code coverage (215 statements in skillforge/)
 
 ---
 
@@ -546,11 +546,12 @@ def learn(topic: str):
 - ✓ Enums (Difficulty, LLMProvider, ProgressStatus, SessionState)
 - ✓ Progress tracking models (CourseProgress, LessonProgress, ExerciseProgress)
 - ✓ Session management (LearningSession)
-- Comprehensive test suite expanded (79 tests, 99% coverage)
+- ✓ Model helper methods (navigation, calculation, state management)
+- Comprehensive test suite expanded (101 tests, 97% coverage)
 - Branch: `feature/phase2-data-models` (active)
 
 ### Next Steps
-- Phase 2 (remaining): Model helper methods, serialization utilities
+- Phase 2 (remaining): Serialization utilities
 - Phase 3: LLM integration (course generator, simulator, validator)
 - Phase 4: Interactive learning session loop
 

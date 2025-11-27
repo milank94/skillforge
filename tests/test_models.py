@@ -112,6 +112,52 @@ class TestLesson:
                 exercises=[{"id": "ex1"}],  # type: ignore  # Missing instruction
             )
 
+    def test_lesson_get_exercise_by_id(self) -> None:
+        """Test getting exercise by ID."""
+        ex1 = Exercise(id="ex1", instruction="First")
+        ex2 = Exercise(id="ex2", instruction="Second")
+        lesson = Lesson(
+            id="lesson1",
+            title="Test",
+            objectives=["Test"],
+            exercises=[ex1, ex2],
+        )
+
+        assert lesson.get_exercise_by_id("ex1") == ex1
+        assert lesson.get_exercise_by_id("ex2") == ex2
+        assert lesson.get_exercise_by_id("nonexistent") is None
+
+    def test_lesson_get_exercise_by_index(self) -> None:
+        """Test getting exercise by index."""
+        ex1 = Exercise(id="ex1", instruction="First")
+        ex2 = Exercise(id="ex2", instruction="Second")
+        lesson = Lesson(
+            id="lesson1",
+            title="Test",
+            objectives=["Test"],
+            exercises=[ex1, ex2],
+        )
+
+        assert lesson.get_exercise_by_index(0) == ex1
+        assert lesson.get_exercise_by_index(1) == ex2
+        assert lesson.get_exercise_by_index(2) is None
+        assert lesson.get_exercise_by_index(-1) is None
+
+    def test_lesson_total_exercises(self) -> None:
+        """Test getting total number of exercises."""
+        lesson = Lesson(
+            id="lesson1",
+            title="Test",
+            objectives=["Test"],
+            exercises=[
+                Exercise(id="ex1", instruction="First"),
+                Exercise(id="ex2", instruction="Second"),
+                Exercise(id="ex3", instruction="Third"),
+            ],
+        )
+
+        assert lesson.total_exercises() == 3
+
 
 class TestCourse:
     """Test the Course model."""
@@ -186,6 +232,85 @@ class TestCourse:
                 difficulty=difficulty,
             )
             assert course.difficulty == difficulty
+
+    def test_course_get_lesson_by_id(self) -> None:
+        """Test getting lesson by ID."""
+        lesson1 = Lesson(id="lesson1", title="First", objectives=["Learn"])
+        lesson2 = Lesson(id="lesson2", title="Second", objectives=["Practice"])
+        course = Course(
+            id="course1",
+            topic="Test",
+            description="Test",
+            difficulty=Difficulty.BEGINNER,
+            lessons=[lesson1, lesson2],
+        )
+
+        assert course.get_lesson_by_id("lesson1") == lesson1
+        assert course.get_lesson_by_id("lesson2") == lesson2
+        assert course.get_lesson_by_id("nonexistent") is None
+
+    def test_course_get_lesson_by_index(self) -> None:
+        """Test getting lesson by index."""
+        lesson1 = Lesson(id="lesson1", title="First", objectives=["Learn"])
+        lesson2 = Lesson(id="lesson2", title="Second", objectives=["Practice"])
+        course = Course(
+            id="course1",
+            topic="Test",
+            description="Test",
+            difficulty=Difficulty.BEGINNER,
+            lessons=[lesson1, lesson2],
+        )
+
+        assert course.get_lesson_by_index(0) == lesson1
+        assert course.get_lesson_by_index(1) == lesson2
+        assert course.get_lesson_by_index(2) is None
+        assert course.get_lesson_by_index(-1) is None
+
+    def test_course_total_lessons(self) -> None:
+        """Test getting total number of lessons."""
+        course = Course(
+            id="course1",
+            topic="Test",
+            description="Test",
+            difficulty=Difficulty.BEGINNER,
+            lessons=[
+                Lesson(id="lesson1", title="First", objectives=["Learn"]),
+                Lesson(id="lesson2", title="Second", objectives=["Practice"]),
+                Lesson(id="lesson3", title="Third", objectives=["Master"]),
+            ],
+        )
+
+        assert course.total_lessons() == 3
+
+    def test_course_total_exercises(self) -> None:
+        """Test getting total number of exercises across all lessons."""
+        course = Course(
+            id="course1",
+            topic="Test",
+            description="Test",
+            difficulty=Difficulty.BEGINNER,
+            lessons=[
+                Lesson(
+                    id="lesson1",
+                    title="First",
+                    objectives=["Learn"],
+                    exercises=[
+                        Exercise(id="ex1", instruction="Do this"),
+                        Exercise(id="ex2", instruction="Do that"),
+                    ],
+                ),
+                Lesson(
+                    id="lesson2",
+                    title="Second",
+                    objectives=["Practice"],
+                    exercises=[
+                        Exercise(id="ex3", instruction="Try this"),
+                    ],
+                ),
+            ],
+        )
+
+        assert course.total_exercises() == 3
 
 
 class TestLLMConfig:
@@ -398,6 +523,53 @@ class TestLessonProgress:
                 exercise_progress=[{"exercise_id": "ex1", "attempts": -1}],  # type: ignore
             )
 
+    def test_lesson_progress_get_exercise_progress(self) -> None:
+        """Test getting exercise progress by ID."""
+        ex1 = ExerciseProgress(exercise_id="ex1")
+        ex2 = ExerciseProgress(exercise_id="ex2")
+        progress = LessonProgress(
+            lesson_id="lesson1",
+            exercise_progress=[ex1, ex2],
+        )
+
+        assert progress.get_exercise_progress("ex1") == ex1
+        assert progress.get_exercise_progress("ex2") == ex2
+        assert progress.get_exercise_progress("nonexistent") is None
+
+    def test_lesson_progress_calculate_completion_percentage(self) -> None:
+        """Test completion percentage calculation."""
+        progress = LessonProgress(
+            lesson_id="lesson1",
+            exercise_progress=[
+                ExerciseProgress(exercise_id="ex1", status=ProgressStatus.COMPLETED),
+                ExerciseProgress(exercise_id="ex2", status=ProgressStatus.COMPLETED),
+                ExerciseProgress(exercise_id="ex3", status=ProgressStatus.IN_PROGRESS),
+                ExerciseProgress(exercise_id="ex4", status=ProgressStatus.NOT_STARTED),
+            ],
+        )
+
+        assert progress.calculate_completion_percentage() == 50.0
+
+    def test_lesson_progress_is_completed(self) -> None:
+        """Test checking if lesson is completed."""
+        progress_incomplete = LessonProgress(
+            lesson_id="lesson1",
+            exercise_progress=[
+                ExerciseProgress(exercise_id="ex1", status=ProgressStatus.COMPLETED),
+                ExerciseProgress(exercise_id="ex2", status=ProgressStatus.IN_PROGRESS),
+            ],
+        )
+        assert not progress_incomplete.is_completed()
+
+        progress_complete = LessonProgress(
+            lesson_id="lesson2",
+            exercise_progress=[
+                ExerciseProgress(exercise_id="ex1", status=ProgressStatus.COMPLETED),
+                ExerciseProgress(exercise_id="ex2", status=ProgressStatus.COMPLETED),
+            ],
+        )
+        assert progress_complete.is_completed()
+
 
 class TestCourseProgress:
     """Test the CourseProgress model."""
@@ -489,6 +661,84 @@ class TestCourseProgress:
         assert (
             course_progress.lesson_progress[0].exercise_progress[0].exercise_id == "ex1"
         )
+
+    def test_course_progress_get_lesson_progress(self) -> None:
+        """Test getting lesson progress by ID."""
+        lesson1 = LessonProgress(lesson_id="lesson1")
+        lesson2 = LessonProgress(lesson_id="lesson2")
+        progress = CourseProgress(
+            course_id="course1",
+            user_id="user1",
+            lesson_progress=[lesson1, lesson2],
+        )
+
+        assert progress.get_lesson_progress("lesson1") == lesson1
+        assert progress.get_lesson_progress("lesson2") == lesson2
+        assert progress.get_lesson_progress("nonexistent") is None
+
+    def test_course_progress_get_current_lesson_progress(self) -> None:
+        """Test getting current lesson progress."""
+        lesson1 = LessonProgress(lesson_id="lesson1")
+        lesson2 = LessonProgress(lesson_id="lesson2")
+        progress = CourseProgress(
+            course_id="course1",
+            user_id="user1",
+            lesson_progress=[lesson1, lesson2],
+            current_lesson_index=1,
+        )
+
+        assert progress.get_current_lesson_progress() == lesson2
+
+    def test_course_progress_calculate_completion_percentage(self) -> None:
+        """Test course completion percentage calculation."""
+        progress = CourseProgress(
+            course_id="course1",
+            user_id="user1",
+            lesson_progress=[
+                LessonProgress(lesson_id="lesson1", status=ProgressStatus.COMPLETED),
+                LessonProgress(lesson_id="lesson2", status=ProgressStatus.COMPLETED),
+                LessonProgress(lesson_id="lesson3", status=ProgressStatus.IN_PROGRESS),
+                LessonProgress(lesson_id="lesson4", status=ProgressStatus.NOT_STARTED),
+            ],
+        )
+
+        assert progress.calculate_completion_percentage() == 50.0
+
+    def test_course_progress_is_completed(self) -> None:
+        """Test checking if course is completed."""
+        progress_incomplete = CourseProgress(
+            course_id="course1",
+            user_id="user1",
+            lesson_progress=[
+                LessonProgress(lesson_id="lesson1", status=ProgressStatus.COMPLETED),
+                LessonProgress(lesson_id="lesson2", status=ProgressStatus.IN_PROGRESS),
+            ],
+        )
+        assert not progress_incomplete.is_completed()
+
+        progress_complete = CourseProgress(
+            course_id="course2",
+            user_id="user2",
+            lesson_progress=[
+                LessonProgress(lesson_id="lesson1", status=ProgressStatus.COMPLETED),
+                LessonProgress(lesson_id="lesson2", status=ProgressStatus.COMPLETED),
+            ],
+        )
+        assert progress_complete.is_completed()
+
+    def test_course_progress_mark_lesson_complete(self) -> None:
+        """Test marking a lesson as complete."""
+        lesson1 = LessonProgress(lesson_id="lesson1")
+        progress = CourseProgress(
+            course_id="course1",
+            user_id="user1",
+            lesson_progress=[lesson1],
+        )
+
+        assert progress.mark_lesson_complete("lesson1")
+        assert lesson1.status == ProgressStatus.COMPLETED
+        assert lesson1.completed_at is not None
+        assert not progress.mark_lesson_complete("nonexistent")
 
 
 class TestLearningSession:
@@ -681,3 +931,173 @@ class TestLearningSession:
         assert SessionState.PAUSED == "paused"
         assert SessionState.COMPLETED == "completed"
         assert SessionState.ABANDONED == "abandoned"
+
+    def test_session_get_current_lesson(self) -> None:
+        """Test getting current lesson from session."""
+        lesson1 = Lesson(id="lesson1", title="Intro", objectives=["Learn basics"])
+        lesson2 = Lesson(id="lesson2", title="Advanced", objectives=["Learn more"])
+        course = Course(
+            id="course1",
+            topic="Python",
+            description="Learn Python",
+            difficulty=Difficulty.BEGINNER,
+            lessons=[lesson1, lesson2],
+        )
+        progress = CourseProgress(course_id="course1", user_id="user1")
+
+        # Test with current lesson set
+        session = LearningSession(
+            course=course, progress=progress, current_lesson_id="lesson1"
+        )
+        current = session.get_current_lesson()
+        assert current is not None
+        assert current.id == "lesson1"
+
+        # Test with no current lesson
+        session2 = LearningSession(course=course, progress=progress)
+        assert session2.get_current_lesson() is None
+
+        # Test with invalid lesson ID
+        session3 = LearningSession(
+            course=course, progress=progress, current_lesson_id="nonexistent"
+        )
+        assert session3.get_current_lesson() is None
+
+    def test_session_get_current_exercise(self) -> None:
+        """Test getting current exercise from session."""
+        ex1 = Exercise(id="ex1", instruction="Print hello")
+        ex2 = Exercise(id="ex2", instruction="Print world")
+        lesson = Lesson(
+            id="lesson1", title="Intro", objectives=["Learn"], exercises=[ex1, ex2]
+        )
+        course = Course(
+            id="course1",
+            topic="Python",
+            description="Learn Python",
+            difficulty=Difficulty.BEGINNER,
+            lessons=[lesson],
+        )
+        progress = CourseProgress(course_id="course1", user_id="user1")
+
+        # Test with both lesson and exercise set
+        session = LearningSession(
+            course=course,
+            progress=progress,
+            current_lesson_id="lesson1",
+            current_exercise_id="ex1",
+        )
+        current = session.get_current_exercise()
+        assert current is not None
+        assert current.id == "ex1"
+
+        # Test with only lesson set
+        session2 = LearningSession(
+            course=course, progress=progress, current_lesson_id="lesson1"
+        )
+        assert session2.get_current_exercise() is None
+
+        # Test with neither set
+        session3 = LearningSession(course=course, progress=progress)
+        assert session3.get_current_exercise() is None
+
+        # Test with invalid exercise ID
+        session4 = LearningSession(
+            course=course,
+            progress=progress,
+            current_lesson_id="lesson1",
+            current_exercise_id="nonexistent",
+        )
+        assert session4.get_current_exercise() is None
+
+    def test_session_pause(self) -> None:
+        """Test pausing a session."""
+        course = Course(
+            id="course1",
+            topic="Python",
+            description="Learn Python",
+            difficulty=Difficulty.BEGINNER,
+        )
+        progress = CourseProgress(course_id="course1", user_id="user1")
+        session = LearningSession(course=course, progress=progress)
+
+        assert session.state == SessionState.ACTIVE
+        assert session.paused_at is None
+
+        session.pause()
+
+        assert session.state == SessionState.PAUSED
+        assert session.paused_at is not None
+        assert session.last_activity_at is not None
+
+    def test_session_resume(self) -> None:
+        """Test resuming a paused session."""
+        course = Course(
+            id="course1",
+            topic="Python",
+            description="Learn Python",
+            difficulty=Difficulty.BEGINNER,
+        )
+        progress = CourseProgress(course_id="course1", user_id="user1")
+        session = LearningSession(
+            course=course, progress=progress, state=SessionState.PAUSED
+        )
+
+        old_activity = session.last_activity_at
+        session.resume()
+
+        assert session.state == SessionState.ACTIVE
+        assert session.last_activity_at >= old_activity
+
+    def test_session_complete(self) -> None:
+        """Test completing a session."""
+        course = Course(
+            id="course1",
+            topic="Python",
+            description="Learn Python",
+            difficulty=Difficulty.BEGINNER,
+        )
+        progress = CourseProgress(course_id="course1", user_id="user1")
+        session = LearningSession(course=course, progress=progress)
+
+        assert session.state == SessionState.ACTIVE
+        assert session.completed_at is None
+
+        session.complete()
+
+        assert session.state == SessionState.COMPLETED
+        assert session.completed_at is not None
+        assert session.last_activity_at is not None
+
+    def test_session_abandon(self) -> None:
+        """Test abandoning a session."""
+        course = Course(
+            id="course1",
+            topic="Python",
+            description="Learn Python",
+            difficulty=Difficulty.BEGINNER,
+        )
+        progress = CourseProgress(course_id="course1", user_id="user1")
+        session = LearningSession(course=course, progress=progress)
+
+        assert session.state == SessionState.ACTIVE
+
+        session.abandon()
+
+        assert session.state == SessionState.ABANDONED
+        assert session.last_activity_at is not None
+
+    def test_session_update_activity(self) -> None:
+        """Test updating session activity timestamp."""
+        course = Course(
+            id="course1",
+            topic="Python",
+            description="Learn Python",
+            difficulty=Difficulty.BEGINNER,
+        )
+        progress = CourseProgress(course_id="course1", user_id="user1")
+        session = LearningSession(course=course, progress=progress)
+
+        old_activity = session.last_activity_at
+        session.update_activity()
+
+        assert session.last_activity_at >= old_activity
