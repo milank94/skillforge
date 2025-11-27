@@ -23,10 +23,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✓ Comprehensive test suite (25 tests, 96% coverage)
 - ✓ Development tooling configured (black, ruff, mypy, pytest)
 
-**Phase 2: Not Started** (Data Models)
-- ⏳ Pydantic models for Course, Lesson, Exercise
-- ⏳ Session management
-- ⏳ Configuration models
+**Phase 2: Complete ✓** (Data Models)
+- ✓ Pydantic models for Course, Lesson, Exercise
+- ✓ Configuration models (AppConfig, LLMConfig)
+- ✓ Enums for constants (Difficulty, LLMProvider, ProgressStatus, SessionState)
+- ✓ Progress tracking models (CourseProgress, LessonProgress, ExerciseProgress)
+- ✓ Session management (LearningSession)
+- ✓ Model helper methods (navigation, calculation, state management)
+- ✓ Serialization utilities (to/from JSON, file I/O)
 
 **Phase 3: Not Started** (LLM Integration)
 - ⏳ LLM client abstraction
@@ -193,21 +197,27 @@ skillforge/
 │   │   ├── __init__.py
 │   │   ├── teacher.py             # Main teaching agent
 │   │   └── evaluator.py           # Code evaluation agent
-│   ├── models/                ⏳ TODO
-│   │   ├── __init__.py
-│   │   ├── course.py              # Course data models
-│   │   ├── lesson.py              # Lesson structure
-│   │   └── config.py              # Configuration models
+│   ├── models/                ✓ IMPLEMENTED
+│   │   ├── __init__.py            ✓ (exports all models)
+│   │   ├── enums.py               ✓ (Difficulty, LLMProvider, ProgressStatus, SessionState)
+│   │   ├── course.py              ✓ (Course model)
+│   │   ├── lesson.py              ✓ (Lesson, Exercise models)
+│   │   ├── config.py              ✓ (AppConfig, LLMConfig)
+│   │   ├── progress.py            ✓ (CourseProgress, LessonProgress, ExerciseProgress)
+│   │   └── session.py             ✓ (LearningSession)
 │   ├── templates/             ⏳ TODO
 │   │   └── course_templates/      # Pre-built course templates
-│   └── utils/                 ⏳ TODO
-│       ├── __init__.py
-│       ├── llm_client.py          # LLM API wrapper
-│       └── output.py              # Rich formatting helpers
+│   └── utils/                 ✓ IMPLEMENTED
+│       ├── __init__.py            ✓ (exports serialization functions)
+│       ├── serialization.py       ✓ (save/load models to/from JSON)
+│       ├── llm_client.py          ⏳ TODO (LLM API wrapper)
+│       └── output.py              ⏳ TODO (Rich formatting helpers)
 ├── tests/
 │   ├── __init__.py            ✓ IMPLEMENTED
 │   ├── test_package.py        ✓ IMPLEMENTED (8 tests: metadata, imports)
 │   ├── test_cli.py            ✓ IMPLEMENTED (17 tests: CLI commands)
+│   ├── test_models.py         ✓ IMPLEMENTED (76 tests: all data models)
+│   ├── test_serialization.py  ✓ IMPLEMENTED (32 tests: serialization utilities)
 │   ├── test_course_generator.py  ⏳ TODO
 │   ├── test_simulator.py     ⏳ TODO
 │   └── test_validator.py     ⏳ TODO
@@ -224,7 +234,7 @@ skillforge/
 └── .gitignore                 ✓ IMPLEMENTED
 ```
 
-**Current Test Coverage**: 25 tests, 96% code coverage (28/29 lines in skillforge/)
+**Current Test Coverage**: 133 tests, 97% code coverage (239 statements in skillforge/)
 
 ---
 
@@ -533,8 +543,19 @@ def learn(topic: str):
 - Configured development tooling (black, ruff, mypy, pytest)
 - Branch: `feature/basic-setup` merged to `main`
 
+### Phase 2 - Data Models (2025-11-26) - Complete ✓
+- ✓ Baseline Pydantic models (Course, Lesson, Exercise)
+- ✓ Configuration models (AppConfig, LLMConfig)
+- ✓ Enums (Difficulty, LLMProvider, ProgressStatus, SessionState)
+- ✓ Progress tracking models (CourseProgress, LessonProgress, ExerciseProgress)
+- ✓ Session management (LearningSession)
+- ✓ Model helper methods (navigation, calculation, state management)
+- ✓ Serialization utilities (to_dict, to_json, from_dict, from_json, save_to_file, load_from_file)
+- Comprehensive test suite expanded (133 tests, 97% coverage)
+- All quality checks passing (black, ruff, mypy, pytest)
+- Branch: `feature/phase2-data-models` (active)
+
 ### Next Steps
-- Phase 2: Implement Pydantic data models (Course, Lesson, Exercise)
 - Phase 3: LLM integration (course generator, simulator, validator)
 - Phase 4: Interactive learning session loop
 
