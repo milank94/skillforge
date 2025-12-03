@@ -55,6 +55,8 @@ target-version = ["py39", "py310", "py311", "py312"]
 [tool.ruff]
 line-length = 88
 target-version = "py39"
+
+[tool.ruff.lint]
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
@@ -65,7 +67,10 @@ select = [
     "B",   # flake8-bugbear
     "C4",  # flake8-comprehensions
 ]
-ignore = []
+ignore = [
+    "B904",  # Allow raising without 'from' (intentional for typer.Exit and error handling)
+    "B017",  # Allow asserting blind exceptions in tests
+]
 
 [tool.mypy]
 python_version = "3.9"
@@ -74,9 +79,19 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 
+[[tool.mypy.overrides]]
+module = "skillforge.utils.llm_client"
+# Relax strict typing for LLM SDK interactions (Anthropic/OpenAI)
+warn_return_any = false
+disallow_any_explicit = false
+disallow_untyped_calls = false
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --cov=skillforge --cov-report=term-missing"
+markers = [
+    "integration: marks tests as integration tests (requires API keys, use -m integration to run)"
+]
