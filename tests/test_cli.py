@@ -4,12 +4,45 @@ Tests for CLI interface.
 Tests command-line interface functionality using Typer's CliRunner.
 """
 
+import os
+from unittest.mock import Mock, patch
+
+import pytest
 from typer.testing import CliRunner
 
 from skillforge import __version__
 from skillforge.cli import app
+from skillforge.models.course import Course
+from skillforge.models.enums import Difficulty
+from skillforge.models.lesson import Exercise, Lesson
 
 runner = CliRunner()
+
+
+@pytest.fixture
+def mock_course():
+    """Mock course for testing."""
+    return Course(
+        id="test-id",
+        topic="Python Basics",
+        description="Learn Python fundamentals",
+        difficulty=Difficulty.BEGINNER,
+        lessons=[
+            Lesson(
+                id="lesson-1",
+                title="Variables",
+                objectives=["Learn variables"],
+                exercises=[
+                    Exercise(
+                        id="ex-1",
+                        instruction="Create a variable",
+                        expected_output=None,
+                        hints=["Use ="],
+                    )
+                ],
+            )
+        ],
+    )
 
 
 class TestCLIVersion:
@@ -57,69 +90,195 @@ class TestCLIHelp:
 class TestLearnCommand:
     """Test the learn command functionality."""
 
-    def test_learn_with_topic(self) -> None:
+    @patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-key"})
+    @patch("skillforge.cli.CourseGenerator")
+    @patch("skillforge.cli.LLMClientFactory.create_client")
+    def test_learn_with_topic(
+        self, mock_client_factory, mock_generator_class, mock_course
+    ) -> None:
         """Test learn command with a topic."""
-        result = runner.invoke(app, ["learn", "pytorch basics"])
-        assert result.exit_code == 0
-        assert "pytorch basics" in result.stdout
-        assert "Starting learning session" in result.stdout
+        mock_generator = Mock()
+        mock_generator.generate_course.return_value = mock_course
+        mock_generator_class.return_value = mock_generator
 
-    def test_learn_interactive_mode(self) -> None:
-        """Test learn command in interactive mode (default)."""
-        result = runner.invoke(app, ["learn", "docker"])
+        result = runner.invoke(
+            app, ["learn", "pytorch basics", "--no-interactive"], input="n\n"
+        )
         assert result.exit_code == 0
-        assert "Interactive: Yes" in result.stdout
+        assert "pytorch basics" in result.stdout.lower()
+        assert "Generating course" in result.stdout
 
-    def test_learn_no_interactive_mode(self) -> None:
-        """Test learn command with interactive mode disabled."""
-        result = runner.invoke(app, ["learn", "kubernetes", "--no-interactive"])
-        assert result.exit_code == 0
-        assert "Interactive: No" in result.stdout
+    @patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-key"})
+    @patch("skillforge.cli.CourseGenerator")
+    @patch("skillforge.cli.LLMClientFactory.create_client")
+    def test_learn_with_difficulty(
+        self, mock_client_factory, mock_generator_class, mock_course
+    ) -> None:
+        """Test learn command with difficulty option."""
+        mock_generator = Mock()
+        mock_generator.generate_course.return_value = mock_course
+        mock_generator_class.return_value = mock_generator
 
-    def test_learn_displays_topic(self) -> None:
-        """Test that learn command displays the provided topic."""
-        topic = "FastAPI fundamentals"
-        result = runner.invoke(app, ["learn", topic])
+        result = runner.invoke(
+            app,
+            ["learn", "Python", "--difficulty", "advanced", "--no-interactive"],
+            input="n\n",
+        )
         assert result.exit_code == 0
-        assert topic in result.stdout
+        assert "Advanced" in result.stdout
 
-    def test_learn_shows_coming_soon(self) -> None:
-        """Test that learn command shows coming soon features."""
-        result = runner.invoke(app, ["learn", "test"])
-        assert result.exit_code == 0
-        assert "Coming soon" in result.stdout
-        assert "AI-generated" in result.stdout
-        assert "interactive lessons" in result.stdout
+    @patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-key"})
+    @patch("skillforge.cli.CourseGenerator")
+    @patch("skillforge.cli.LLMClientFactory.create_client")
+    def test_learn_with_lesson_count(
+        self, mock_client_factory, mock_generator_class, mock_course
+    ) -> None:
+        """Test learn command with custom lesson count."""
+        mock_generator = Mock()
+        mock_generator.generate_course.return_value = mock_course
+        mock_generator_class.return_value = mock_generator
 
-    def test_learn_multiple_word_topic(self) -> None:
-        """Test learn with multi-word topic."""
-        result = runner.invoke(app, ["learn", "advanced machine learning"])
+        result = runner.invoke(
+            app, ["learn", "Docker", "--lessons", "7", "--no-interactive"], input="n\n"
+        )
         assert result.exit_code == 0
-        assert "advanced machine learning" in result.stdout
+        assert "Lessons: 7" in result.stdout
 
-    def test_learn_topic_with_special_characters(self) -> None:
-        """Test learn with topic containing special characters."""
-        result = runner.invoke(app, ["learn", "Python 3.9+"])
+    @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"})
+    @patch("skillforge.cli.CourseGenerator")
+    @patch("skillforge.cli.LLMClientFactory.create_client")
+    def test_learn_with_provider(
+        self, mock_client_factory, mock_generator_class, mock_course
+    ) -> None:
+        """Test learn command with provider option."""
+        mock_generator = Mock()
+        mock_generator.generate_course.return_value = mock_course
+        mock_generator_class.return_value = mock_generator
+
+        result = runner.invoke(
+            app,
+            ["learn", "Python", "--provider", "openai", "--no-interactive"],
+            input="n\n",
+        )
         assert result.exit_code == 0
-        assert "Python 3.9+" in result.stdout
+        assert "openai" in result.stdout.lower()
+
+    def test_learn_without_api_key(self) -> None:
+        """Test learn command fails gracefully without API key."""
+        with patch.dict(os.environ, {}, clear=True):
+            result = runner.invoke(app, ["learn", "Python", "--no-interactive"])
+            assert result.exit_code == 1
+            assert "API key" in result.stdout or "ANTHROPIC_API_KEY" in result.stdout
+
+    @patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-key"})
+    @patch("skillforge.cli.CourseGenerator")
+    @patch("skillforge.cli.LLMClientFactory.create_client")
+    def test_learn_invalid_difficulty(
+        self, mock_client_factory, mock_generator_class
+    ) -> None:
+        """Test learn command with invalid difficulty."""
+        result = runner.invoke(app, ["learn", "Python", "--difficulty", "invalid"])
+        assert result.exit_code == 1
+        assert "Invalid difficulty" in result.stdout
+
+    @patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-key"})
+    @patch("skillforge.cli.CourseGenerator")
+    @patch("skillforge.cli.LLMClientFactory.create_client")
+    def test_learn_invalid_lesson_count(
+        self, mock_client_factory, mock_generator_class
+    ) -> None:
+        """Test learn command with invalid lesson count."""
+        result = runner.invoke(app, ["learn", "Python", "--lessons", "25"])
+        assert result.exit_code == 1
+        assert "must be between 1 and 20" in result.stdout
+
+    @patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-key"})
+    @patch("skillforge.cli.CourseGenerator")
+    @patch("skillforge.cli.LLMClientFactory.create_client")
+    def test_learn_displays_course_overview(
+        self, mock_client_factory, mock_generator_class, mock_course
+    ) -> None:
+        """Test that learn command displays course overview."""
+        mock_generator = Mock()
+        mock_generator.generate_course.return_value = mock_course
+        mock_generator_class.return_value = mock_generator
+
+        result = runner.invoke(
+            app, ["learn", "Python", "--no-interactive"], input="n\n"
+        )
+        assert result.exit_code == 0
+        assert "Course Overview" in result.stdout or "Python Basics" in result.stdout
+
+    @patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-key"})
+    @patch("skillforge.cli.CourseGenerator")
+    @patch("skillforge.cli.LLMClientFactory.create_client")
+    @patch("skillforge.cli.save_course")
+    def test_learn_save_course(
+        self, mock_save, mock_client_factory, mock_generator_class, mock_course
+    ) -> None:
+        """Test saving course after generation."""
+        mock_generator = Mock()
+        mock_generator.generate_course.return_value = mock_course
+        mock_generator_class.return_value = mock_generator
+
+        result = runner.invoke(
+            app, ["learn", "Python", "--no-interactive"], input="y\n"
+        )
+        assert result.exit_code == 0
+        mock_save.assert_called_once()
+
+
+class TestCacheCommands:
+    """Test cache management commands."""
+
+    @patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-key"})
+    @patch("skillforge.cli.CourseGenerator")
+    @patch("skillforge.cli.LLMClientFactory.create_client")
+    def test_cache_clear(self, mock_client_factory, mock_generator_class) -> None:
+        """Test cache-clear command."""
+        mock_generator = Mock()
+        mock_generator.clear_cache.return_value = 3
+        mock_generator_class.return_value = mock_generator
+
+        result = runner.invoke(app, ["cache-clear"])
+        assert result.exit_code == 0
+        assert "3" in result.stdout
+        assert "Cleared" in result.stdout or "cleared" in result.stdout
+
+    @patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-key"})
+    @patch("skillforge.cli.CourseGenerator")
+    @patch("skillforge.cli.LLMClientFactory.create_client")
+    def test_cache_clear_empty(self, mock_client_factory, mock_generator_class) -> None:
+        """Test cache-clear with no cached courses."""
+        mock_generator = Mock()
+        mock_generator.clear_cache.return_value = 0
+        mock_generator_class.return_value = mock_generator
+
+        result = runner.invoke(app, ["cache-clear"])
+        assert result.exit_code == 0
+        assert "No cached courses" in result.stdout or "0" in result.stdout
+
+    @patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-key"})
+    @patch("skillforge.cli.CourseGenerator")
+    @patch("skillforge.cli.LLMClientFactory.create_client")
+    def test_cache_info(self, mock_client_factory, mock_generator_class) -> None:
+        """Test cache-info command."""
+        mock_generator = Mock()
+        mock_generator.get_cache_stats.return_value = {
+            "cached_courses": 5,
+            "total_size_bytes": 10240,
+            "cache_dir": "/test/cache",
+        }
+        mock_generator_class.return_value = mock_generator
+
+        result = runner.invoke(app, ["cache-info"])
+        assert result.exit_code == 0
+        assert "5" in result.stdout
+        assert "Cache Statistics" in result.stdout or "cache" in result.stdout.lower()
 
 
 class TestCLIOutput:
     """Test CLI output formatting and presentation."""
-
-    def test_output_contains_skillforge_branding(self) -> None:
-        """Test that output contains SkillForge branding."""
-        result = runner.invoke(app, ["learn", "test"])
-        assert result.exit_code == 0
-        assert "SkillForge" in result.stdout
-
-    def test_output_is_formatted(self) -> None:
-        """Test that output uses rich formatting (contains box characters)."""
-        result = runner.invoke(app, ["learn", "test"])
-        assert result.exit_code == 0
-        # Rich formatting typically uses box drawing characters
-        # Just verify the command runs and produces output
-        assert len(result.stdout) > 0
 
     def test_version_output_formatted(self) -> None:
         """Test that version output is properly formatted."""
@@ -127,6 +286,24 @@ class TestCLIOutput:
         assert result.exit_code == 0
         assert "version" in result.stdout.lower()
         assert __version__ in result.stdout
+
+    @patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-key"})
+    @patch("skillforge.cli.CourseGenerator")
+    @patch("skillforge.cli.LLMClientFactory.create_client")
+    def test_learn_output_formatted(
+        self, mock_client_factory, mock_generator_class, mock_course
+    ) -> None:
+        """Test that learn output uses Rich formatting."""
+        mock_generator = Mock()
+        mock_generator.generate_course.return_value = mock_course
+        mock_generator_class.return_value = mock_generator
+
+        result = runner.invoke(
+            app, ["learn", "Python", "--no-interactive"], input="n\n"
+        )
+        assert result.exit_code == 0
+        # Verify output is generated
+        assert len(result.stdout) > 100
 
 
 class TestCLIErrorHandling:
