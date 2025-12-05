@@ -278,9 +278,7 @@ def cache_clear() -> None:
 
         if count > 0:
             plural = "s" if count != 1 else ""
-            console.print(
-                f"[green]✓[/green] Cleared {count} cached course{plural}"
-            )
+            console.print(f"[green]✓[/green] Cleared {count} cached course{plural}")
         else:
             console.print("[yellow]No cached courses found[/yellow]")
 
