@@ -6,7 +6,7 @@ tracking the current state of a user's interaction with a course.
 """
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -49,22 +49,20 @@ class LearningSession(BaseModel):
     state: SessionState = Field(
         default=SessionState.ACTIVE, description="Current session state"
     )
-    current_lesson_id: Optional[str] = Field(None, description="Current lesson ID")
-    current_exercise_id: Optional[str] = Field(None, description="Current exercise ID")
+    current_lesson_id: str | None = Field(None, description="Current lesson ID")
+    current_exercise_id: str | None = Field(None, description="Current exercise ID")
     created_at: datetime = Field(
         default_factory=datetime.now, description="Session creation time"
     )
     last_activity_at: datetime = Field(
         default_factory=datetime.now, description="Last activity timestamp"
     )
-    paused_at: Optional[datetime] = Field(
-        None, description="When the session was paused"
-    )
-    completed_at: Optional[datetime] = Field(
+    paused_at: datetime | None = Field(None, description="When the session was paused")
+    completed_at: datetime | None = Field(
         None, description="When the session was completed"
     )
 
-    def get_current_lesson(self) -> "Optional[Lesson]":
+    def get_current_lesson(self) -> "Lesson | None":
         """
         Get the Lesson object for the current lesson.
 
@@ -75,7 +73,7 @@ class LearningSession(BaseModel):
             return self.course.get_lesson_by_id(self.current_lesson_id)
         return None
 
-    def get_current_exercise(self) -> "Optional[Exercise]":
+    def get_current_exercise(self) -> "Exercise | None":
         """
         Get the Exercise object for the current exercise.
 

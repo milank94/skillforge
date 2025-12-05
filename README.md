@@ -19,6 +19,8 @@
 
 ### Development Setup
 
+**Requirements**: Python 3.12 or higher
+
 1. **Clone the repository**
    ```bash
    git clone https://github.com/milank94/skillforge.git

@@ -7,7 +7,6 @@ with rich formatting for enhanced user experience.
 
 import os
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich import box
@@ -60,7 +59,7 @@ def main(
     pass
 
 
-def load_config(provider: Optional[str] = None) -> AppConfig:
+def load_config(provider: str | None = None) -> AppConfig:
     """Load configuration from environment variables.
 
     Args:
@@ -165,7 +164,7 @@ def learn(
     lessons: int = typer.Option(
         5, "--lessons", "-l", help="Number of lessons to generate (1-20)"
     ),
-    provider: Optional[str] = typer.Option(
+    provider: str | None = typer.Option(
         None,
         "--provider",
         "-p",

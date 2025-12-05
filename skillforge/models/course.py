@@ -4,8 +4,6 @@ Course data model.
 This module defines the structure for a complete learning course.
 """
 
-from typing import Optional
-
 from pydantic import BaseModel, Field
 
 from .enums import Difficulty
@@ -35,7 +33,7 @@ class Course(BaseModel):
         default_factory=list, description="Lessons in this course"
     )
 
-    def get_lesson_by_id(self, lesson_id: str) -> Optional[Lesson]:
+    def get_lesson_by_id(self, lesson_id: str) -> Lesson | None:
         """
         Get a lesson by its ID.
 
@@ -50,7 +48,7 @@ class Course(BaseModel):
                 return lesson
         return None
 
-    def get_lesson_by_index(self, index: int) -> Optional[Lesson]:
+    def get_lesson_by_index(self, index: int) -> Lesson | None:
         """
         Get a lesson by its index in the course.
 

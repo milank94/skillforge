@@ -9,7 +9,7 @@ import json
 import time
 import uuid
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from skillforge.models.course import Course
 from skillforge.models.enums import Difficulty
@@ -29,7 +29,7 @@ class CourseGenerator:
     def __init__(
         self,
         llm_client: BaseLLMClient,
-        cache_dir: Optional[Path] = None,
+        cache_dir: Path | None = None,
         cache_ttl_days: int = 30,
     ):
         """Initialize the course generator.
@@ -237,7 +237,7 @@ Generate a complete course following the JSON schema provided."""
         cache_string = json.dumps(cache_input, sort_keys=True)
         return hashlib.sha256(cache_string.encode()).hexdigest()[:16]
 
-    def _load_from_cache(self, cache_key: str) -> Optional[Course]:
+    def _load_from_cache(self, cache_key: str) -> Course | None:
         """Load course from cache if exists and not expired.
 
         Args:

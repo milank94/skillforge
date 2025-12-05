@@ -6,14 +6,12 @@ with proper handling of datetime fields and pretty-printing support.
 """
 
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any
 
 from pydantic import BaseModel
 
 
-def save_to_file(
-    model: BaseModel, file_path: Union[str, Path], indent: int = 2
-) -> None:
+def save_to_file(model: BaseModel, file_path: str | Path, indent: int = 2) -> None:
     """
     Save a Pydantic model to a JSON file.
 
@@ -47,9 +45,7 @@ def save_to_file(
     path.write_text(json_str, encoding="utf-8")
 
 
-def load_from_file(
-    model_class: type[BaseModel], file_path: Union[str, Path]
-) -> BaseModel:
+def load_from_file(model_class: type[BaseModel], file_path: str | Path) -> BaseModel:
     """
     Load a Pydantic model from a JSON file.
 
@@ -109,7 +105,7 @@ def to_dict(model: BaseModel, exclude_none: bool = False) -> dict[str, Any]:
 
 
 def to_json(
-    model: BaseModel, indent: Optional[int] = None, exclude_none: bool = False
+    model: BaseModel, indent: int | None = None, exclude_none: bool = False
 ) -> str:
     """
     Convert a Pydantic model to a JSON string.

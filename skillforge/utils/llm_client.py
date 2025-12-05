@@ -8,7 +8,8 @@ import json
 import os
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 from anthropic import Anthropic, APIError, APITimeoutError, RateLimitError
 from openai import (
@@ -46,8 +47,8 @@ class BaseLLMClient(ABC):
     def generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
-        temperature: Optional[float] = None,
+        system_prompt: str | None = None,
+        temperature: float | None = None,
         max_tokens: int = 2048,
     ) -> str:
         """Generate completion from prompt.
@@ -71,8 +72,8 @@ class BaseLLMClient(ABC):
     def generate_json(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
-        schema: Optional[dict[str, Any]] = None,
+        system_prompt: str | None = None,
+        schema: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Generate structured JSON response.
 
@@ -105,7 +106,7 @@ class BaseLLMClient(ABC):
         Raises:
             RuntimeError: If all retries fail
         """
-        last_error: Optional[Exception] = None
+        last_error: Exception | None = None
 
         for attempt in range(self.max_retries):
             try:
@@ -170,8 +171,8 @@ class AnthropicClient(BaseLLMClient):
     def generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
-        temperature: Optional[float] = None,
+        system_prompt: str | None = None,
+        temperature: float | None = None,
         max_tokens: int = 2048,
     ) -> str:
         """Generate completion from prompt using Claude.
@@ -210,8 +211,8 @@ class AnthropicClient(BaseLLMClient):
     def generate_json(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
-        schema: Optional[dict[str, Any]] = None,
+        system_prompt: str | None = None,
+        schema: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Generate structured JSON response using Claude.
 
@@ -293,8 +294,8 @@ class OpenAIClient(BaseLLMClient):
     def generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
-        temperature: Optional[float] = None,
+        system_prompt: str | None = None,
+        temperature: float | None = None,
         max_tokens: int = 2048,
     ) -> str:
         """Generate completion from prompt using GPT.
@@ -334,8 +335,8 @@ class OpenAIClient(BaseLLMClient):
     def generate_json(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
-        schema: Optional[dict[str, Any]] = None,
+        system_prompt: str | None = None,
+        schema: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Generate structured JSON response using GPT.
 

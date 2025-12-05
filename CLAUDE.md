@@ -49,7 +49,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Setup
 ```bash
-# Create virtual environment (Python 3.9+)
+# Create virtual environment (Python 3.12+)
 python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
@@ -125,7 +125,7 @@ pipx install skillforge
 ### Tech Stack
 ```
 Core (Implemented):
-- Python 3.9+ ✓
+- Python 3.12+ ✓
 - typer (CLI framework) ✓
 - rich (terminal UI/formatting) ✓
 - pytest + pytest-cov (testing) ✓

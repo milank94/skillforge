@@ -77,7 +77,9 @@ class TestCLIHelp:
         result = runner.invoke(app, [])
         # Typer shows usage info but exits with code 2 when no command is given
         assert result.exit_code == 2
-        assert "Usage:" in result.stdout
+        # In newer versions of Typer, error messages go to stderr
+        output = result.stdout + (result.stderr if hasattr(result, "stderr") else "")
+        assert "Usage:" in output
 
     def test_learn_help(self) -> None:
         """Test help for learn command."""
