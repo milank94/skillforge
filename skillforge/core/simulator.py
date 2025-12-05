@@ -9,7 +9,7 @@ import re
 import shlex
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from skillforge.utils.llm_client import BaseLLMClient
 
@@ -28,7 +28,7 @@ class SimulationResult:
 
     success: bool
     output: str
-    error: Optional[str] = None
+    error: str | None = None
     exit_code: int = 0
     state_changes: dict[str, Any] = field(default_factory=dict)
 
@@ -214,7 +214,7 @@ class CommandSimulator:
     to LLM for unknown commands.
     """
 
-    def __init__(self, llm_client: Optional[BaseLLMClient] = None) -> None:
+    def __init__(self, llm_client: BaseLLMClient | None = None) -> None:
         """Initialize the command simulator.
 
         Args:
@@ -230,7 +230,7 @@ class CommandSimulator:
         self.python_imports: set[str] = set()
         self.python_variables: dict[str, Any] = {}
 
-    def simulate(self, command: str, context: Optional[str] = None) -> SimulationResult:
+    def simulate(self, command: str, context: str | None = None) -> SimulationResult:
         """Simulate execution of a command.
 
         Args:
@@ -395,7 +395,7 @@ class CommandSimulator:
         )
 
     def _simulate_python_command(
-        self, args: list[str], context: Optional[str]
+        self, args: list[str], context: str | None
     ) -> SimulationResult:
         """Simulate python command execution."""
         if not args:
@@ -439,9 +439,7 @@ class CommandSimulator:
         ]
         return any(re.match(pattern, command) for pattern in python_patterns)
 
-    def _simulate_python_code(
-        self, code: str, context: Optional[str]
-    ) -> SimulationResult:
+    def _simulate_python_code(self, code: str, context: str | None) -> SimulationResult:
         """Simulate Python code execution."""
         code = code.strip()
 
@@ -646,9 +644,7 @@ class CommandSimulator:
                 exit_code=0,
             )
 
-    def _simulate_with_llm(
-        self, command: str, context: Optional[str]
-    ) -> SimulationResult:
+    def _simulate_with_llm(self, command: str, context: str | None) -> SimulationResult:
         """Use LLM to simulate unknown command.
 
         Args:

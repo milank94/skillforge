@@ -6,7 +6,6 @@ lessons, and exercises.
 """
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -30,8 +29,8 @@ class ExerciseProgress(BaseModel):
         default=ProgressStatus.NOT_STARTED, description="Current status"
     )
     attempts: int = Field(default=0, description="Number of attempts", ge=0)
-    user_answer: Optional[str] = Field(None, description="User's submitted answer")
-    completed_at: Optional[datetime] = Field(
+    user_answer: str | None = Field(None, description="User's submitted answer")
+    completed_at: datetime | None = Field(
         None, description="When the exercise was completed"
     )
 
@@ -55,14 +54,12 @@ class LessonProgress(BaseModel):
     exercise_progress: list[ExerciseProgress] = Field(
         default_factory=list, description="Progress on exercises"
     )
-    started_at: Optional[datetime] = Field(
-        None, description="When the lesson was started"
-    )
-    completed_at: Optional[datetime] = Field(
+    started_at: datetime | None = Field(None, description="When the lesson was started")
+    completed_at: datetime | None = Field(
         None, description="When the lesson was completed"
     )
 
-    def get_exercise_progress(self, exercise_id: str) -> Optional[ExerciseProgress]:
+    def get_exercise_progress(self, exercise_id: str) -> ExerciseProgress | None:
         """
         Get progress for a specific exercise.
 
@@ -130,14 +127,12 @@ class CourseProgress(BaseModel):
     current_lesson_index: int = Field(
         default=0, description="Current lesson index", ge=0
     )
-    started_at: Optional[datetime] = Field(
-        None, description="When the course was started"
-    )
-    completed_at: Optional[datetime] = Field(
+    started_at: datetime | None = Field(None, description="When the course was started")
+    completed_at: datetime | None = Field(
         None, description="When the course was completed"
     )
 
-    def get_lesson_progress(self, lesson_id: str) -> Optional[LessonProgress]:
+    def get_lesson_progress(self, lesson_id: str) -> LessonProgress | None:
         """
         Get progress for a specific lesson.
 
@@ -152,7 +147,7 @@ class CourseProgress(BaseModel):
                 return progress
         return None
 
-    def get_current_lesson_progress(self) -> Optional[LessonProgress]:
+    def get_current_lesson_progress(self) -> LessonProgress | None:
         """
         Get the progress for the current lesson.
 

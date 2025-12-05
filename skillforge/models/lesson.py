@@ -4,8 +4,6 @@ Lesson and Exercise data models.
 This module defines the structure for lessons and exercises in a course.
 """
 
-from typing import Optional
-
 from pydantic import BaseModel, Field
 
 
@@ -25,7 +23,7 @@ class Exercise(BaseModel):
 
     id: str = Field(..., description="Unique identifier for the exercise")
     instruction: str = Field(..., description="The task description for the user")
-    expected_output: Optional[str] = Field(
+    expected_output: str | None = Field(
         None, description="Expected result for validation"
     )
     hints: list[str] = Field(default_factory=list, description="Hints to help the user")
@@ -54,7 +52,7 @@ class Lesson(BaseModel):
         default_factory=list, description="Exercises in this lesson"
     )
 
-    def get_exercise_by_id(self, exercise_id: str) -> Optional[Exercise]:
+    def get_exercise_by_id(self, exercise_id: str) -> Exercise | None:
         """
         Get an exercise by its ID.
 
@@ -69,7 +67,7 @@ class Lesson(BaseModel):
                 return exercise
         return None
 
-    def get_exercise_by_index(self, index: int) -> Optional[Exercise]:
+    def get_exercise_by_index(self, index: int) -> Exercise | None:
         """
         Get an exercise by its index in the lesson.
 
