@@ -10,10 +10,18 @@ from skillforge.core.simulator import (
     SimulationResult,
     VirtualFileSystem,
 )
+from skillforge.core.validator import (
+    ExerciseValidator,
+    ValidationResult,
+    ValidationStatus,
+)
 
 __all__ = [
     "CourseGenerator",
     "CommandSimulator",
     "SimulationResult",
     "VirtualFileSystem",
+    "ExerciseValidator",
+    "ValidationResult",
+    "ValidationStatus",
 ]
