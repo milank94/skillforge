@@ -32,11 +32,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✓ Model helper methods (navigation, calculation, state management)
 - ✓ Serialization utilities (to/from JSON, file I/O)
 
-**Phase 3: Not Started** (LLM Integration)
-- ⏳ LLM client abstraction
-- ⏳ Course generator
-- ⏳ Command simulator
-- ⏳ Validator engine
+**Phase 3: Complete ✓** (LLM Integration)
+- ✓ LLM client abstraction (Anthropic + OpenAI with retry logic)
+- ✓ Course generator (with hash-based caching, 30-day TTL)
+- ✓ CLI integration (enhanced learn command, Rich formatting, cache management)
+- ✓ Command simulator (pattern-based + LLM fallback, virtual file system)
+- ✓ Validator engine (pattern matching + LLM-powered evaluation + hint generation)
 
 **Phase 4: Not Started** (Interactive Learning)
 - ⏳ Interactive session loop
@@ -131,9 +132,10 @@ Core (Implemented):
 - pytest + pytest-cov (testing) ✓
 - black, ruff, mypy (code quality) ✓
 
-Core (Planned):
-- anthropic or openai SDK (LLM integration)
-- pydantic (data validation and settings)
+Core (Implemented):
+- anthropic SDK (LLM integration) ✓
+- openai SDK (LLM integration) ✓
+- pydantic (data validation and settings) ✓
 
 Optional/Future:
 - textual (TUI/GUI)
@@ -187,12 +189,12 @@ skillforge/
 ├── skillforge/                 # Main package
 │   ├── __init__.py            ✓ IMPLEMENTED (version, author, email)
 │   ├── cli.py                 ✓ IMPLEMENTED (CLI entry point with typer)
-│   ├── core/                  ⏳ TODO
-│   │   ├── __init__.py
-│   │   ├── course_generator.py    # LLM-based course creation
-│   │   ├── simulator.py           # Command/file simulation
-│   │   ├── validator.py           # Exercise validation
-│   │   └── session.py             # Session management
+│   ├── core/                  ✓ IMPLEMENTED
+│   │   ├── __init__.py            ✓ (exports all core components)
+│   │   ├── course_generator.py    ✓ (LLM-based course creation with caching)
+│   │   ├── simulator.py           ✓ (Command/file simulation with virtual FS)
+│   │   ├── validator.py           ✓ (Exercise validation with LLM + patterns)
+│   │   └── session.py             ⏳ TODO (Session management)
 │   ├── agents/                ⏳ TODO
 │   │   ├── __init__.py
 │   │   ├── teacher.py             # Main teaching agent
@@ -210,17 +212,18 @@ skillforge/
 │   └── utils/                 ✓ IMPLEMENTED
 │       ├── __init__.py            ✓ (exports serialization functions)
 │       ├── serialization.py       ✓ (save/load models to/from JSON)
-│       ├── llm_client.py          ⏳ TODO (LLM API wrapper)
+│       ├── llm_client.py          ✓ (Anthropic + OpenAI clients with retry)
 │       └── output.py              ⏳ TODO (Rich formatting helpers)
 ├── tests/
 │   ├── __init__.py            ✓ IMPLEMENTED
 │   ├── test_package.py        ✓ IMPLEMENTED (8 tests: metadata, imports)
-│   ├── test_cli.py            ✓ IMPLEMENTED (17 tests: CLI commands)
+│   ├── test_cli.py            ✓ IMPLEMENTED (21 tests: CLI commands)
 │   ├── test_models.py         ✓ IMPLEMENTED (76 tests: all data models)
 │   ├── test_serialization.py  ✓ IMPLEMENTED (32 tests: serialization utilities)
-│   ├── test_course_generator.py  ⏳ TODO
-│   ├── test_simulator.py     ⏳ TODO
-│   └── test_validator.py     ⏳ TODO
+│   ├── test_llm_client.py     ✓ IMPLEMENTED (31 tests: LLM client abstraction)
+│   ├── test_course_generator.py  ✓ IMPLEMENTED (29 tests: course generation)
+│   ├── test_simulator.py     ✓ IMPLEMENTED (60 tests: command simulation)
+│   └── test_validator.py     ✓ IMPLEMENTED (35 tests: exercise validation)
 ├── docs/                      ⏳ TODO
 │   ├── getting-started.md
 │   ├── architecture.md
@@ -234,7 +237,7 @@ skillforge/
 └── .gitignore                 ✓ IMPLEMENTED
 ```
 
-**Current Test Coverage**: 133 tests, 97% code coverage (239 statements in skillforge/)
+**Current Test Coverage**: 279 tests (15 skipped), 93% code coverage (972 statements in skillforge/)
 
 ---
 
@@ -420,37 +423,45 @@ skillforge config set llm.provider anthropic
 - Module imports and structure
 - Version format validation (semantic versioning)
 
-**test_cli.py** (17 tests):
+**test_cli.py** (21 tests):
 - Version flag display (`--version`, `-v`)
 - Help functionality (`--help`, no args, command help)
-- Learn command with various inputs
+- Learn command with various inputs and options
 - Interactive/non-interactive modes
 - Output formatting with Rich
+- Cache management commands
 - Error handling for invalid commands
 
-**Coverage Details**:
-- 28/29 statements covered in skillforge/
-- Only uncovered line: `if __name__ == "__main__": app()` (boilerplate, intentionally not tested)
+**test_llm_client.py** (31 tests):
+- Client factory creation and provider validation
+- Anthropic client: text generation, JSON mode, system prompts
+- OpenAI client: text generation, JSON mode, system prompts
+- Retry logic and error handling
+- Integration tests (skipped by default, requires API keys)
 
-### Planned Tests (Future Phases)
-
-**Unit Tests**:
+**test_course_generator.py** (29 tests):
 - Course generation with mocked LLM responses
-- Command simulation pattern matching
-- Validation logic and feedback generation
-- File system simulation operations
+- Cache key generation and consistency
+- Cache hit/miss/expiration behavior
+- Input validation (empty topic, lesson count bounds)
+- System and user prompt generation
 
-**Integration Tests**:
-- Full course flow end-to-end (with mocked LLM)
-- CLI command parsing and execution
-- Session persistence and resumption
+**test_simulator.py** (60 tests):
+- Virtual file system operations (16 tests)
+- Shell command simulation: echo, ls, cat, mkdir, touch, cd, pwd
+- Python code simulation: imports, variables, print, file execution
+- Package manager (pip), git, docker, kubectl simulation
+- LLM fallback for unknown commands
+- State persistence and reset functionality
 
-**Manual Testing**:
-- Real LLM integration with various topics
-- User experience flow testing
-- Performance with different course types
+**test_validator.py** (35 tests):
+- Pattern-based validation: exact, case-insensitive, whitespace, contains, subset
+- LLM-powered validation with mocked responses
+- Score clamping, error handling, malformed response handling
+- Hint generation: progressive, LLM-generated, fallback
+- Validation workflows
 
-**Coverage Target**: >80% for all modules (currently at 96%)
+**Coverage Target**: >80% for all modules (currently at 93%)
 
 ---
 
@@ -527,8 +538,8 @@ def learn(topic: str):
 
 ---
 
-**Last Updated**: 2025-11-10
-**Project Status**: Phase 1 Complete ✓ (Basic Setup + CLI + Tests)
+**Last Updated**: 2026-02-01
+**Project Status**: Phase 3 Complete ✓ (LLM Integration)
 
 ---
 
@@ -553,11 +564,30 @@ def learn(topic: str):
 - ✓ Serialization utilities (to_dict, to_json, from_dict, from_json, save_to_file, load_from_file)
 - Comprehensive test suite expanded (133 tests, 97% coverage)
 - All quality checks passing (black, ruff, mypy, pytest)
-- Branch: `feature/phase2-data-models` (active)
+- Branch: `feature/phase2-data-models` merged to `main`
+
+### Phase 3 - LLM Integration (2026-02-01) - Complete ✓
+- ✓ LLM client abstraction (BaseLLMClient, AnthropicClient, OpenAIClient)
+  - Exponential backoff retry logic (1s, 2s, 4s) for rate limits
+  - JSON mode support for structured output
+  - LLMClientFactory for provider selection
+- ✓ Course generator with hash-based caching (SHA256, 30-day TTL)
+- ✓ CLI integration (enhanced learn command, Rich formatting, cache management)
+- ✓ Command simulator (pattern-based + LLM fallback)
+  - Virtual file system (VirtualFileSystem)
+  - Shell, Python, pip, git, docker, kubectl simulation
+  - State persistence across commands
+- ✓ Exercise validator (pattern matching + LLM-powered evaluation)
+  - ValidationResult with score (0.0-1.0), feedback, hints
+  - Progressive hint generation
+- ✓ Upgraded Python dependency from 3.9 to 3.12
+  - Modernized type annotations (Optional[X] → X | None)
+- Comprehensive test suite (279 tests, 93% coverage)
+- All quality checks passing (black, ruff, mypy, pytest)
+- Branch: `feature/phase3-llm-integration`
 
 ### Next Steps
-- Phase 3: LLM integration (course generator, simulator, validator)
-- Phase 4: Interactive learning session loop
+- Phase 4: Interactive learning session loop, progress tracking, feedback system
 
 ---
 
