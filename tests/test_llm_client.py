@@ -12,7 +12,29 @@ from skillforge.utils.llm_client import (
     AnthropicClient,
     LLMClientFactory,
     OpenAIClient,
+    _strip_markdown_fences,
 )
+
+# Tests for _strip_markdown_fences
+
+
+def test_strip_markdown_fences_raw_json():
+    """Raw JSON without fences is returned unchanged."""
+    raw = '{"key": "value"}'
+    assert _strip_markdown_fences(raw) == raw
+
+
+def test_strip_markdown_fences_with_json_tag():
+    """Fences with ```json tag are stripped."""
+    text = '```json\n{"key": "value"}\n```'
+    assert _strip_markdown_fences(text) == '{"key": "value"}'
+
+
+def test_strip_markdown_fences_without_language_tag():
+    """Fences without a language tag are stripped."""
+    text = '```\n{"key": "value"}\n```'
+    assert _strip_markdown_fences(text) == '{"key": "value"}'
+
 
 # Test fixtures
 

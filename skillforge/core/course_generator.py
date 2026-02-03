@@ -184,6 +184,10 @@ Guidelines:
 - Provide hints for learners who get stuck
 - Keep exercises achievable but challenging
 - Use realistic examples and scenarios
+- IMPORTANT: Each exercise must require exactly ONE command or action from the student
+- Never combine multiple steps into a single exercise
+- Break workflows into separate exercises
+- The expected_output should be the exact command or answer the student needs to type
 
 Output Format: Return a valid JSON object matching the provided schema."""
 
@@ -210,6 +214,10 @@ Requirements:
   - Clear instruction
   - Expected output (if applicable)
   - 2-3 helpful hints
+
+- Each exercise must be a SINGLE action (one command, one line of code, or one answer)
+- Do NOT ask students to perform multiple steps in one exercise
+- The expected_output should be the exact command or answer the student should enter
 
 Focus on hands-on, command-line based learning where students can practice
 actual commands and write real code.

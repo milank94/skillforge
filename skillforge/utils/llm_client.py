@@ -26,6 +26,17 @@ from skillforge.models.config import LLMConfig
 from skillforge.models.enums import LLMProvider
 
 
+def _strip_markdown_fences(text: str) -> str:
+    """Strip markdown code fences from LLM response."""
+    text = text.strip()
+    if text.startswith("```"):
+        first_newline = text.index("\n")
+        text = text[first_newline + 1 :]
+    if text.endswith("```"):
+        text = text[:-3]
+    return text.strip()
+
+
 class BaseLLMClient(ABC):
     """Abstract base class for LLM clients.
 
@@ -251,7 +262,9 @@ class AnthropicClient(BaseLLMClient):
                 messages=[{"role": "user", "content": prompt}],
             )
 
-            text = response.content[0].text  # type: ignore[union-attr]
+            text = _strip_markdown_fences(
+                response.content[0].text  # type: ignore[union-attr]
+            )
 
             # Parse JSON response
             try:
@@ -380,7 +393,7 @@ class OpenAIClient(BaseLLMClient):
                 response_format={"type": "json_object"},  # Enable JSON mode
             )
 
-            text = response.choices[0].message.content or "{}"
+            text = _strip_markdown_fences(response.choices[0].message.content or "{}")
 
             # Parse JSON response
             try:

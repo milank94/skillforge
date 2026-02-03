@@ -151,26 +151,51 @@ class ExerciseValidator:
                 details={"match_type": "normalized_whitespace"},
             )
 
-        # Check if answer contains the expected output
-        if expected_stripped.lower() in user_answer.lower():
+        # Command-aware matching: if both look like CLI commands with the same
+        # base command, compare tokens as sets (handles flag reordering and
+        # equivalent shorthand flags)
+        if self._is_equivalent_command(normalized_answer, normalized_expected):
             return ValidationResult(
-                status=ValidationStatus.PARTIAL,
-                score=0.7,
-                feedback="Your answer contains the expected output, "
-                "but includes extra content. Try to be more precise.",
-                hints=self._get_exercise_hints(exercise, hint_index=0),
-                details={"match_type": "contains"},
+                status=ValidationStatus.CORRECT,
+                score=1.0,
+                feedback="Correct! Well done.",
+                details={"match_type": "command_equivalent"},
             )
 
-        # If expected output is in the answer (reversed check)
-        if user_answer.lower() in expected_stripped.lower():
-            return ValidationResult(
-                status=ValidationStatus.PARTIAL,
-                score=0.5,
-                feedback="You're on the right track, " "but your answer is incomplete.",
-                hints=self._get_exercise_hints(exercise, hint_index=0),
-                details={"match_type": "subset"},
-            )
+        # Skip substring checks for command-like inputs — substring
+        # relationships between commands are misleading (e.g. "docker version"
+        # is a substring of "docker --version" but they are different valid
+        # commands).  Fall through to LLM for accurate evaluation instead.
+        answer_tokens = normalized_answer.split()
+        expected_tokens = normalized_expected.split()
+        both_look_like_commands = (
+            len(answer_tokens) >= 2
+            and len(expected_tokens) >= 2
+            and answer_tokens[0] == expected_tokens[0]
+        )
+
+        if not both_look_like_commands:
+            # Check if answer contains the expected output
+            if expected_stripped.lower() in user_answer.lower():
+                return ValidationResult(
+                    status=ValidationStatus.PARTIAL,
+                    score=0.7,
+                    feedback="Your answer contains the expected output, "
+                    "but includes extra content. Try to be more precise.",
+                    hints=self._get_exercise_hints(exercise, hint_index=0),
+                    details={"match_type": "contains"},
+                )
+
+            # If expected output is in the answer (reversed check)
+            if user_answer.lower() in expected_stripped.lower():
+                return ValidationResult(
+                    status=ValidationStatus.PARTIAL,
+                    score=0.5,
+                    feedback="You're on the right track, "
+                    "but your answer is incomplete.",
+                    hints=self._get_exercise_hints(exercise, hint_index=0),
+                    details={"match_type": "subset"},
+                )
 
         # No definitive pattern match - return None to try LLM
         return None
@@ -237,6 +262,12 @@ User's Answer: {user_answer}
             prompt += f"Learning Context: {context}\n"
 
         prompt += """
+Important evaluation guidelines:
+- For command-line exercises, accept any command that achieves the same result, \
+even if syntax differs (flag order, shorthand flags, equivalent alternatives)
+- Focus on whether the answer accomplishes the exercise goal, not exact string matching
+- If functionally correct but different syntax, mark as correct
+
 Evaluate the answer and respond in this exact format:
 Status: [correct/incorrect/partial]
 Score: [0.0 to 1.0]
@@ -319,6 +350,47 @@ Hint: [one helpful hint if not fully correct, or "none" if correct]
             hints=hints,
             details={"source": "llm"},
         )
+
+    @staticmethod
+    def _is_equivalent_command(answer: str, expected: str) -> bool:
+        """Check if two strings are equivalent CLI commands.
+
+        Compares the base command and treats remaining tokens as sets,
+        so flag order doesn't matter.
+
+        Args:
+            answer: Normalized user answer
+            expected: Normalized expected output
+
+        Returns:
+            True if the commands are functionally equivalent
+        """
+        answer_tokens = answer.lower().split()
+        expected_tokens = expected.lower().split()
+
+        if not answer_tokens or not expected_tokens:
+            return False
+
+        # Must share the same base command (first token)
+        if answer_tokens[0] != expected_tokens[0]:
+            return False
+
+        # For multi-word base commands (e.g. "docker run", "git commit"),
+        # find the longest common prefix of non-flag tokens
+        base_len = 1
+        for i in range(1, min(len(answer_tokens), len(expected_tokens))):
+            if answer_tokens[i] == expected_tokens[i] and not answer_tokens[
+                i
+            ].startswith("-"):
+                base_len = i + 1
+            else:
+                break
+
+        # Compare remaining tokens as sets
+        answer_rest = set(answer_tokens[base_len:])
+        expected_rest = set(expected_tokens[base_len:])
+
+        return answer_rest == expected_rest
 
     def _get_exercise_hints(self, exercise: Exercise, hint_index: int = 0) -> list[str]:
         """Get hints from the exercise, starting at a given index.

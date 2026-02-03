@@ -191,8 +191,11 @@ class SessionManager:
         ex_progress.status = ProgressStatus.IN_PROGRESS
 
         while True:
-            answer = self.display.prompt_answer()
-            answer_stripped = answer.strip().lower()
+            answer = self.display.prompt_answer().strip()
+            # Strip surrounding backticks (users sometimes type `command`)
+            if answer.startswith("`") and answer.endswith("`") and len(answer) > 1:
+                answer = answer[1:-1].strip()
+            answer_stripped = answer.lower()
 
             # Handle special commands
             if answer_stripped in SPECIAL_COMMANDS:

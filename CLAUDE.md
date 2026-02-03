@@ -243,7 +243,7 @@ skillforge/
 └── .gitignore                 ✓ IMPLEMENTED
 ```
 
-**Current Test Coverage**: 351 tests (15 skipped), 93% code coverage
+**Current Test Coverage**: 354 tests (15 skipped), 93% code coverage
 
 ---
 
@@ -603,6 +603,16 @@ def learn(topic: str):
 - Comprehensive test suite (351 tests, 93% coverage)
 - All quality checks passing (black, ruff, mypy, pytest)
 - Branch: `feature/phase4-interactive-learning`
+
+### Post-Phase 4 Fixes (2026-02-02)
+- ✓ Constrain exercise generation to single-action exercises (course_generator prompts)
+- ✓ Flexible LLM validation prompt (accept functionally equivalent commands)
+- ✓ Command-aware pattern matching (flag reordering, token-set comparison)
+- ✓ Skip misleading substring checks for command-like inputs
+- ✓ Strip backticks from user input in session manager
+- ✓ Strip markdown code fences from LLM JSON responses
+- Comprehensive test suite (354 tests, 93% coverage)
+- All quality checks passing (black, ruff, mypy, pytest)
 
 ### Next Steps
 - Phase 5: TUI improvements, course templates, offline mode
