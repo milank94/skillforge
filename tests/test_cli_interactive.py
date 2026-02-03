@@ -56,9 +56,7 @@ class TestLearnInteractive:
         mock_gen.generate_course.return_value = make_course()
         mock_gen_cls.return_value = mock_gen
 
-        runner.invoke(
-            app, ["learn", "git basics", "--interactive"], input="y\n"
-        )
+        runner.invoke(app, ["learn", "git basics", "--interactive"], input="y\n")
         mock_start.assert_called_once()
 
     @patch("skillforge.cli.LLMClientFactory.create_client")

@@ -5,6 +5,7 @@ and exercise validation.
 """
 
 from skillforge.core.course_generator import CourseGenerator
+from skillforge.core.session import SessionManager, find_saved_sessions
 from skillforge.core.simulator import (
     CommandSimulator,
     SimulationResult,
@@ -24,4 +25,6 @@ __all__ = [
     "ExerciseValidator",
     "ValidationResult",
     "ValidationStatus",
+    "SessionManager",
+    "find_saved_sessions",
 ]

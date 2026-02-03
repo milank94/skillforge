@@ -6,13 +6,15 @@
 
 ## Status
 
-🚧 **Active Development** - Core LLM integration complete. Interactive learning session coming next!
+🚧 **Active Development** - Interactive learning sessions now available!
 
 ## Features
 
 - **AI-Powered Course Generation**: Uses Anthropic (Claude) or OpenAI (GPT-4) to generate personalized learning curricula with intelligent caching
 - **Safe Command Simulation**: Simulates shell, Python, git, Docker, and kubectl commands with a virtual file system — no risk to your system
 - **Exercise Validation**: Pattern matching + LLM-powered evaluation with progressive hints and constructive feedback
+- **Interactive Sessions**: Guided learning loop with special commands (hint, skip, quit, help, status)
+- **Progress Persistence**: Save and resume sessions at any time
 - **Rich Terminal UI**: Beautiful course overviews, progress indicators, and formatted output using Rich
 - **Multi-Provider Support**: Works with both Anthropic and OpenAI APIs
 
@@ -69,6 +71,19 @@ skillforge learn "kubernetes" --provider openai
 
 # Non-interactive mode (just display the course)
 skillforge learn "git basics" --no-interactive
+```
+
+### Resume & Progress
+
+```bash
+# List saved sessions
+skillforge resume
+
+# Resume a specific session (supports partial IDs)
+skillforge resume abc123
+
+# View progress without resuming
+skillforge status abc123
 ```
 
 ### Cache Management
@@ -155,7 +170,7 @@ mypy skillforge/
 - [x] Phase 1: Basic package setup and CLI structure
 - [x] Phase 2: Data models (Course, Lesson, Exercise, Progress)
 - [x] Phase 3: LLM integration (course generator, simulator, validator)
-- [ ] Phase 4: Interactive learning session loop and progress tracking
+- [x] Phase 4: Interactive learning sessions and progress tracking
 
 ## Project Structure
 
@@ -166,6 +181,7 @@ skillforge/
 │   ├── cli.py               # CLI interface (typer + rich)
 │   ├── core/                # Core functionality
 │   │   ├── course_generator.py  # LLM-based course creation
+│   │   ├── session.py           # Interactive session manager
 │   │   ├── simulator.py         # Command simulation engine
 │   │   └── validator.py         # Exercise validation engine
 │   ├── models/              # Pydantic data models
@@ -176,8 +192,9 @@ skillforge/
 │   │   └── session.py           # Learning session
 │   └── utils/               # Utilities
 │       ├── llm_client.py        # Anthropic + OpenAI clients
+│       ├── output.py            # Rich display helpers
 │       └── serialization.py     # JSON serialization
-├── tests/                   # 279 tests, 93% coverage
+├── tests/                   # 351 tests, 93% coverage
 ├── pyproject.toml           # Project configuration
 ├── README.md                # This file
 └── CLAUDE.md                # Development guide
