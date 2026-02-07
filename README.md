@@ -1,22 +1,51 @@
-# SkillForge
+<div align="center">
 
-> AI-powered interactive learning CLI for developers
+<img src="assets/logo.png" alt="SkillForge Logo" width="400">
 
-**SkillForge** helps developers learn new frameworks, tools, and technologies through hands-on practice in safe, simulated environments. Get personalized courses, step-by-step guidance, and real-time feedback—all from your terminal.
+**AI-powered interactive learning CLI for developers**
+
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![Tests](https://img.shields.io/badge/tests-354%20passing-brightgreen.svg)]()
+[![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen.svg)]()
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+[Features](#features) • [Installation](#installation) • [Usage](#usage) • [Architecture](#architecture) • [Contributing](#contributing)
+
+</div>
+
+---
+
+SkillForge helps developers learn new frameworks, tools, and technologies through hands-on practice in safe, simulated environments. Get personalized courses, step-by-step guidance, and real-time feedback—all from your terminal.
+
+<div align="center">
+
+![SkillForge Demo](assets/demo.gif)
+
+</div>
 
 ## Status
 
-🚧 **Active Development** - Interactive learning sessions now available!
+🚧 **Active Development** — Interactive learning sessions now available!
 
 ## Features
 
-- **AI-Powered Course Generation**: Uses Anthropic (Claude) or OpenAI (GPT-4) to generate personalized learning curricula with intelligent caching
-- **Safe Command Simulation**: Simulates shell, Python, git, Docker, and kubectl commands with a virtual file system — no risk to your system
-- **Exercise Validation**: Pattern matching + LLM-powered evaluation with progressive hints and constructive feedback
-- **Interactive Sessions**: Guided learning loop with special commands (hint, skip, quit, help, status)
-- **Progress Persistence**: Save and resume sessions at any time
-- **Rich Terminal UI**: Beautiful course overviews, progress indicators, and formatted output using Rich
-- **Multi-Provider Support**: Works with both Anthropic and OpenAI APIs
+🤖 **AI-Powered Course Generation** — Uses Claude or GPT-4 to create personalized curricula with intelligent caching
+
+🛡️ **Safe Command Simulation** — Practice shell, Python, git, Docker, and kubectl without risk to your system
+
+✅ **Intelligent Validation** — Pattern matching + LLM evaluation with progressive hints and feedback
+
+💾 **Progress Persistence** — Save and resume sessions at any time
+
+🎨 **Rich Terminal UI** — Beautiful course overviews, progress indicators, and formatted output
+
+🔄 **Multi-Provider Support** — Works with both Anthropic and OpenAI APIs
+
+### Intelligent Feedback
+
+SkillForge provides helpful feedback whether you get it right or need another try:
+
+![Validation Examples](assets/validation.png)
 
 ## Installation
 
@@ -73,6 +102,15 @@ skillforge learn "kubernetes" --provider openai
 skillforge learn "git basics" --no-interactive
 ```
 
+<details open>
+<summary>📸 Example: Generated PyTorch Course</summary>
+
+<br>
+
+![Generated Course Example](assets/pytorch_advanced.png)
+
+</details>
+
 ### Resume & Progress
 
 ```bash
@@ -85,6 +123,15 @@ skillforge resume abc123
 # View progress without resuming
 skillforge status abc123
 ```
+
+<details open>
+<summary>📸 Example: Resume Menu</summary>
+
+<br>
+
+![Resume Menu](assets/resume.png)
+
+</details>
 
 ### Cache Management
 
@@ -194,7 +241,7 @@ skillforge/
 │       ├── llm_client.py        # Anthropic + OpenAI clients
 │       ├── output.py            # Rich display helpers
 │       └── serialization.py     # JSON serialization
-├── tests/                   # 351 tests, 93% coverage
+├── tests/                   # 354 tests, 93% coverage
 ├── pyproject.toml           # Project configuration
 ├── README.md                # This file
 └── CLAUDE.md                # Development guide
