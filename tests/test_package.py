@@ -18,7 +18,7 @@ class TestPackageMetadata:
 
     def test_version_format(self) -> None:
         """Test that version follows semantic versioning format."""
-        assert __version__ == "0.1.0"
+        assert __version__ == "0.1.1"
         parts = __version__.split(".")
         assert len(parts) == 3
         assert all(part.isdigit() for part in parts)

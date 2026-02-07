@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "skillforge-cli"
-version = "0.1.0"
+version = "0.1.1"
 description = "AI-powered CLI tool for interactive, personalized learning experiences"
 readme = "README.md"
 requires-python = ">=3.12"

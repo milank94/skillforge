@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/logo.png" alt="SkillForge Logo" width="400">
+<img src="https://raw.githubusercontent.com/milank94/skillforge/main/assets/logo.png" alt="SkillForge Logo" width="400">
 
 **AI-powered interactive learning CLI for developers**
 
@@ -19,7 +19,7 @@ SkillForge helps developers learn new frameworks, tools, and technologies throug
 
 <div align="center">
 
-![SkillForge Demo](assets/demo.gif)
+![SkillForge Demo](https://raw.githubusercontent.com/milank94/skillforge/main/assets/demo.gif)
 
 </div>
 
@@ -43,7 +43,7 @@ SkillForge helps developers learn new frameworks, tools, and technologies throug
 
 SkillForge provides helpful feedback whether you get it right or need another try:
 
-![Validation Examples](assets/validation.png)
+![Validation Examples](https://raw.githubusercontent.com/milank94/skillforge/main/assets/validation.png)
 
 ## Installation
 
@@ -120,7 +120,7 @@ skillforge learn "git basics" --no-interactive
 
 <br>
 
-![Generated Course Example](assets/pytorch_advanced.png)
+![Generated Course Example](https://raw.githubusercontent.com/milank94/skillforge/main/assets/pytorch_advanced.png)
 
 </details>
 
@@ -142,7 +142,7 @@ skillforge status abc123
 
 <br>
 
-![Resume Menu](assets/resume.png)
+![Resume Menu](https://raw.githubusercontent.com/milank94/skillforge/main/assets/resume.png)
 
 </details>
 
