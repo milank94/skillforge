@@ -635,6 +635,12 @@ def learn(topic: str):
 - Comprehensive test suite (354 tests, 93% coverage)
 - All quality checks passing (black, ruff, mypy, pytest)
 
+### GitHub Release v0.1.1 (2026-02-07)
+- ✓ Created annotated git tag `v0.1.1`
+- ✓ Created GitHub release with release notes
+- ✓ Attached dist assets (wheel + sdist)
+- Release: https://github.com/milank94/skillforge/releases/tag/v0.1.1
+
 ### Next Steps
 - Phase 5: TUI improvements, course templates, offline mode
 
