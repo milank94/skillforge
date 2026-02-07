@@ -102,7 +102,7 @@ twine upload --repository testpypi dist/*
 twine upload dist/*
 
 # Test installation
-pipx install skillforge
+pipx install skillforge-cli
 ```
 
 ---
@@ -148,7 +148,7 @@ Optional/Future:
 ```
 
 ### Distribution:
-- Primary: PyPI (pip, pipx, uv)
+- Primary: PyPI as `skillforge-cli` (pip, pipx, uv)
 - Package format: Modern pyproject.toml (PEP 621)
 
 ### High-Level Architecture
@@ -613,6 +613,12 @@ def learn(topic: str):
 - ✓ Strip markdown code fences from LLM JSON responses
 - Comprehensive test suite (354 tests, 93% coverage)
 - All quality checks passing (black, ruff, mypy, pytest)
+
+### PyPI Package Rename (2026-02-07)
+- ✓ Renamed PyPI distribution from `skillforge` to `skillforge-cli` (name taken on PyPI)
+- ✓ Added explicit setuptools package discovery (`[tool.setuptools.packages.find]`)
+- ✓ Cleaned up README feature list formatting
+- Python import name (`skillforge`) and CLI command (`skillforge`) unchanged
 
 ### Next Steps
 - Phase 5: TUI improvements, course templates, offline mode

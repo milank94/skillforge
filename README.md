@@ -29,17 +29,15 @@ SkillForge helps developers learn new frameworks, tools, and technologies throug
 
 ## Features
 
-🤖 **AI-Powered Course Generation** — Uses Claude or GPT-4 to create personalized curricula with intelligent caching
+**AI-Powered Course Generation** — Uses Claude or GPT to create personalized curricula with intelligent caching
 
-🛡️ **Safe Command Simulation** — Practice shell, Python, git, Docker, and kubectl without risk to your system
+**Safe Command Simulation** — Practice shell, Python, git, Docker, and kubectl without risk to your system
 
-✅ **Intelligent Validation** — Pattern matching + LLM evaluation with progressive hints and feedback
+**Intelligent Validation** — Pattern matching + LLM evaluation with progressive hints and feedback
 
-💾 **Progress Persistence** — Save and resume sessions at any time
+**Progress Persistence** — Save and resume sessions at any time
 
-🎨 **Rich Terminal UI** — Beautiful course overviews, progress indicators, and formatted output
-
-🔄 **Multi-Provider Support** — Works with both Anthropic and OpenAI APIs
+**Rich Terminal UI** — Beautiful course overviews, progress indicators, and formatted output
 
 ### Intelligent Feedback
 
