@@ -47,6 +47,21 @@ SkillForge provides helpful feedback whether you get it right or need another tr
 
 ## Installation
 
+### Install from PyPI
+
+```bash
+pip install skillforge-cli
+# or
+pipx install skillforge-cli
+```
+
+Then set up your API key and start learning:
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+skillforge learn "python basics"
+```
+
 ### Development Setup
 
 **Requirements**: Python 3.12 or higher

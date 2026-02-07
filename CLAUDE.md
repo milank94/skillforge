@@ -620,6 +620,16 @@ def learn(topic: str):
 - ✓ Cleaned up README feature list formatting
 - Python import name (`skillforge`) and CLI command (`skillforge`) unchanged
 
+### PyPI Publish Prep (2026-02-07)
+- ✓ Fixed author/email placeholders in `skillforge/__init__.py`
+- ✓ Added `[project.urls]` (Homepage, Repository, Issues) to `pyproject.toml`
+- ✓ Modernized license format (SPDX string instead of deprecated table)
+- ✓ Removed deprecated license classifier
+- ✓ Added PyPI install instructions to README.md
+- ✓ `twine check` passes on both sdist and wheel
+- Comprehensive test suite (354 tests, 93% coverage)
+- All quality checks passing (black, ruff, mypy, pytest)
+
 ### Next Steps
 - Phase 5: TUI improvements, course templates, offline mode
 
